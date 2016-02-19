@@ -1134,8 +1134,8 @@ function update() {
 }
 
 function controlInventoryScreen() {
-    for(var e = 0; e < 9; e++){
-           inventory.items.crafting[e].kill();
+    for (var e = 0; e < 9; e++) {
+        inventory.items.crafting[e].kill();
     }
     for (var e = 0; e < inventory.items.length; e++) {
         for (var i = 0; i < inventory.items[e].length; i++) {
@@ -1189,43 +1189,43 @@ function controlInventoryScreen() {
                 if (inventory.items[inventory.currentTab][e].Requirements[i] != undefined) {
                     var X;
                     var Y;
-                    switch(i){
-                        case 0:
-                            X = window.innerWidth / 4 + 40;
-                            Y = window.innerHeight / 10 + 250;
-                            break;
-                        case 1:
-                            X = window.innerWidth / 4 + 105;
-                            Y = window.innerHeight / 10 + 250;
-                            break;
-                        case 2:
-                            X = window.innerWidth / 4 + 168;
-                            Y = window.innerHeight / 10 + 250;
-                            break;
-                        case 3:
-                            X = window.innerWidth / 4 + 40;
-                            Y = window.innerHeight / 10 + 330;
-                            break;
-                        case 4:
-                            X = window.innerWidth / 4 + 105;
-                            Y = window.innerHeight / 10 + 330;
-                            break;
-                        case 5:
-                            X = window.innerWidth / 4 + 168;
-                            Y = window.innerHeight / 10 + 330;
-                            break;
-                        case 6:
-                            X = window.innerWidth / 4 + 40;
-                            Y = window.innerHeight / 10 + 410;
-                            break;
-                        case 7:
-                            X = window.innerWidth / 4 + 105;
-                            Y = window.innerHeight / 10 + 410;
-                            break;
-                        case 8:
-                            X = window.innerWidth / 4 + 168;
-                            Y = window.innerHeight / 10 + 410;
-                            break;
+                    switch (i) {
+                    case 0:
+                        X = window.innerWidth / 4 + 40;
+                        Y = window.innerHeight / 10 + 250;
+                        break;
+                    case 1:
+                        X = window.innerWidth / 4 + 105;
+                        Y = window.innerHeight / 10 + 250;
+                        break;
+                    case 2:
+                        X = window.innerWidth / 4 + 168;
+                        Y = window.innerHeight / 10 + 250;
+                        break;
+                    case 3:
+                        X = window.innerWidth / 4 + 40;
+                        Y = window.innerHeight / 10 + 330;
+                        break;
+                    case 4:
+                        X = window.innerWidth / 4 + 105;
+                        Y = window.innerHeight / 10 + 330;
+                        break;
+                    case 5:
+                        X = window.innerWidth / 4 + 168;
+                        Y = window.innerHeight / 10 + 330;
+                        break;
+                    case 6:
+                        X = window.innerWidth / 4 + 40;
+                        Y = window.innerHeight / 10 + 410;
+                        break;
+                    case 7:
+                        X = window.innerWidth / 4 + 105;
+                        Y = window.innerHeight / 10 + 410;
+                        break;
+                    case 8:
+                        X = window.innerWidth / 4 + 168;
+                        Y = window.innerHeight / 10 + 410;
+                        break;
                     }
                     inventory.items.crafting[i] = game.add.sprite(X, Y, inventory.items[inventory.currentTab][e].Requirements[i]);
                     inventory.items.crafting[i].scale.setTo(0.8, 0.9);
@@ -1238,7 +1238,7 @@ function controlInventoryScreen() {
             inventory.items[inventory.currentTab][e].sprite.visible = true;
         }
     }
-    for(var e = 0; e < inventoryControls.length; e++){
+    for (var e = 0; e < inventoryControls.length; e++) {
         inventoryControls[e].isDown = false;
     }
 
