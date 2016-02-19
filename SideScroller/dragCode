@@ -1,0 +1,96 @@
+function onDragStart(block, mouse) {
+    startX = block.x;
+    startY = block.y;
+    draggedMouse = game.input.mouse.button;
+}
+
+function onDragStop(block, mouse) {
+    var loopCount = 0;
+    var clickedBlockData;
+    if (draggedMouse == 0) {
+        for (var e = 0; e < player.inventory.length; e++) {
+            if (e == inventoryBar.inventory.length) {
+                if (block.x > inventoryBar.x + 420 && block.x < (inventoryBar.x + 500) && (block.y > inventoryBar.y && block.y < inventoryBar.y + 90)) {
+                    block.fixedToCamera = false;
+                    block.x = inventoryBar.x + 425;
+                    block.y = inventoryBar.y + 10;
+                    block.fixedToCamera = false;
+                    inventoryBar.crafting[0].Key = inventoryBar.inventory[block.number].key;
+                    inventoryBar.crafting[0].Amount = player.inventory[block.number].Amount;
+                    inventoryBar.crafting[0].Number = block.number;
+                    crafting();
+                } else if (block.x > inventoryBar.x + 501 && block.x < (inventoryBar.x + 581) && (block.y > inventoryBar.y && block.y < inventoryBar.y + 90)) {
+                    block.fixedToCamera = false;
+                    block.x = inventoryBar.x + 508;
+                    block.y = inventoryBar.y + 10;
+                    block.fixedToCamera = false;
+                    inventoryBar.crafting[1].Key = inventoryBar.inventory[block.number].key;
+                    inventoryBar.crafting[1].Amount = player.inventory[block.number].Amount;
+                    inventoryBar.crafting[1].Number = block.number;
+                    crafting();
+                } else if (block.x > inventoryBar.x + 501 && block.x < (inventoryBar.x + 581) && (block.y > inventoryBar.y + 90 && block.y < inventoryBar.y + 180)) {
+                    block.fixedToCamera = false;
+                    block.x = inventoryBar.x + 508;
+                    block.y = inventoryBar.y + 100;
+                    block.fixedToCamera = false;
+                    inventoryBar.crafting[2].Key = inventoryBar.inventory[block.number].key;
+                    inventoryBar.crafting[2].Amount = player.inventory[block.number].Amount;
+                    inventoryBar.crafting[2].Number = block.number;
+                    crafting();
+                } else if (block.x > inventoryBar.x + 420 && block.x < (inventoryBar.x + 500) && (block.y > inventoryBar.y + 90 && block.y < inventoryBar.y + 180)) {
+                    block.fixedToCamera = false;
+                    block.x = inventoryBar.x + 425;
+                    block.y = inventoryBar.y + 100;
+                    block.fixedToCamera = false;
+                    inventoryBar.crafting[3].Key = inventoryBar.inventory[block.number].key;
+                    inventoryBar.crafting[3].Amount = player.inventory[block.number].Amount;
+                    inventoryBar.crafting[3].Number = block.number;
+                    crafting();
+                } else {
+                    block.fixedToCamera = false;
+                    block.x = startX;
+                    block.y = startY;
+                    block.fixedToCamera = false;
+                    break;
+                }
+            }
+            if ((block.x > inventoryBar.inventory[e].x && block.x < inventoryBar.inventory[e].x + inventoryBar.inventory[e].width) && (block.y > inventoryBar.inventory[e].y && block.y < inventoryBar.inventory[e].y + inventoryBar.inventory[e].height)) {
+                reDrawBar = true;
+                for (var i = 0; i < items.length; i++) {
+                    if (inventoryBar.inventory[e].key == items[i].Name) {
+                        clickedBlockData = i;
+                    }
+                }
+                var object1Amount = player.inventory[block.number].Amount;
+                var object2Amount = player.inventory[e].Amount
+                player.inventory[block.number].Name = items[clickedBlockData].Name;
+                player.inventory[block.number].Amount = object2Amount;
+                player.inventory[block.number].MineLevel = items[clickedBlockData].MineLevel;
+                player.inventory[block.number].Health = items[clickedBlockData].Health;
+
+                for (var i = 0; i < items.length; i++) {
+                    if (block.key == items[i].Name) {
+                        clickedBlockData = i;
+                    }
+                }
+
+                player.inventory[e].Name = items[clickedBlockData].Name;
+                player.inventory[e].Amount = object1Amount;
+                player.inventory[e].MineLevel = items[clickedBlockData].MineLevel;
+                player.inventory[e].Health = items[clickedBlockData].Health;
+                for (var e = 0; e < inventoryBar.inventory.length; e++) {
+                    inventoryBar.inventory[e].kill();
+                    inventoryBar.inventory.splice(e, 1);
+                    inventoryBarText[loopCount].text = "";
+                    inventoryBarText[loopCount] = "Null";
+                    loopCount++;
+                    e = -1;
+                }
+                HUD();
+                break;
+            }
+            //420
+            //500, 70
+        }
+    }
+}
