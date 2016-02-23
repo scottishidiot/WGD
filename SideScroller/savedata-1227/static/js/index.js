@@ -20,7 +20,8 @@ var inventoryBarHighlighter;
 var reDrawBar = false;
 var inventoryControls;
 var inventoryTabButton;
-var updateInventory = false
+var updateInventory = false;
+var blockKeyData = new Array();
 
 function preload() {
     game.load.image('player', 'Assets/GameImages/Player/p1_front.png');
@@ -1317,8 +1318,8 @@ function ePressed() {
     }
 }
 
-
 //Server tests
+//This function sends data to the server
 function test() {
     var start = 0;
     var end;
@@ -1343,21 +1344,11 @@ function test() {
             start = e;
 
             $.get("/save?blocks=" + storedata[0]);
-            break;
         }
     }
 }
-var blockKeyData = new Array();
-
+//This function retrieves data from server
 function test2() {
-    /* var getData = $.get("/retrieve", function () {
-            console.log("Success");
-        })
-        .done(function (response) {
-            console.log(response);
-        })
-*/
-    //$.get("https://savedata-1227.appspot.com/retrieve");
     $.ajax({
         type: 'GET',
         url: "/retrieve",
@@ -1369,13 +1360,15 @@ function test2() {
             //response.Data.Blocks - This is where the long string is
             var start = 0;
             var end = 0;
+            response.Data[0].Blocks = response.Data[0].Blocks + ",";
             do {
                 var commaLocation = response.Data[0].Blocks.indexOf(",", end);
                 start = end;
-                end = commaLocation + 1;
-                blockKeyData.push(response.Data[0].Blocks.substr(start, end));
-            } while (end < response.Data[0].Blocks.length);
-
+                end = commaLocation;
+                blockKeyData.push(response.Data[0].Blocks.substr(start, end - start));
+                start = end;
+                end++;
+            } while (end < response.Data[0].Blocks.length)
         }
     });
 }
