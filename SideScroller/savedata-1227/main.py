@@ -28,8 +28,27 @@ class arrangeData(ndb.Model):
 		jsondata = {
 			"Blocks" : self.blocks
 		}
-		return json.encode(jsondata)	
-  
+		return json.encode(jsondata)
+    
+class accountData(ndb.Model):
+    username = ndb.StringProperty()
+    password = ndb.StringProperty()
+    def toJSON(self):
+		jsondata = {
+			"Username" : self.username
+		}
+		return json.encode(jsondata)
+
+class save(webapp2.RequestHandler):
+    def get(self):
+        self.response.headers['Access-Control-Allow-Origin'] = '*'
+        self.response.headers['Access-Control'] = '*'
+        callback = self.request.get('callback')
+        blocks = self.request.get("blocks")
+        data = arrangeData()
+        data.blocks = blocks
+        data.put()
+        
 class download(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Access-Control-Allow-Origin'] = '*'
@@ -43,17 +62,37 @@ class download(webapp2.RequestHandler):
                 dataEntry += data.toJSON() + ','
         dataEntry = dataEntry[:-1]
         self.response.write(response % (dataEntry))
-
-class save(webapp2.RequestHandler):
+        
+class login(webapp2.RequestHandler):
+    def get(self):
+        self.response.write("");
+        acc = accountData.get_by_id(self.request.get('username'))
+        password = self.request.get("password")
+        if (acc and password == acc.password):
+            self.response.write("Correct log in")
+        else:
+            self.response.write("Incorrect log in")
+        
+class createaccount(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Access-Control-Allow-Origin'] = '*'
         self.response.headers['Access-Control'] = '*'
-        blocks = self.request.get("blocks")
-        data = arrangeData()
-        data.blocks = blocks
-        data.put()
-
+        callback = self.request.get('callback')
+        accCheck = accountData.get_by_id(self.request.get("username"))
+        if accCheck:
+            self.response.write("Username in use")
+        else:
+            self.response.write("Account created")
+            username = self.request.get("username")
+            password = self.request.get("password")
+            accCheck = accountData(id=username)
+            accCheck.username = username
+            accCheck.password = password
+            accCheck.put()
+			
 app = webapp2.WSGIApplication([
     ('/save', save),
-    ('/retrieve', download)
+    ('/retrieve', download),
+    ('/login', login),
+    ('/createaccount', createaccount)
 ], debug=True)

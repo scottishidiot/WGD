@@ -1,10 +1,15 @@
-var game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.CANVAS, '', {
-    preload: preload,
-    create: create,
-    update: update
-});
+window.onload = function () {
 
+}
+var game;
 
+function startGame() {
+    game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.CANVAS, '', {
+        preload: preload,
+        create: create,
+        update: update
+    });
+}
 var items = new Array();
 var blocks;
 var chunks = new Array();
@@ -23,7 +28,12 @@ var inventoryTabButton;
 var updateInventory = false;
 var blockKeyData = new Array();
 
+function updateProgressBar(){
+    console.log(game.load.progress);
+}
+
 function preload() {
+    game.load.onFileComplete.add(updateProgressBar, this);
     game.load.image('player', 'Assets/GameImages/Player/p1_front.png');
     game.load.image('playerHurt', 'Assets/GameImages/Player/p1_hurt.png');
     game.load.image('playerJump', 'Assets/GameImages/Player/p1_jump.png');
@@ -73,6 +83,7 @@ function preload() {
 }
 
 function create() {
+    game.stage.backgroundColor = '#ffffff'
     game.canvas.oncontextmenu = function (e) {
         e.preventDefault();
     }
