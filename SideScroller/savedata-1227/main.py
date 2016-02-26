@@ -65,9 +65,9 @@ class download(webapp2.RequestHandler):
         
 class login(webapp2.RequestHandler):
     def get(self):
-        self.response.write("");
         acc = accountData.get_by_id(self.request.get('username'))
         password = self.request.get("password")
+        callback = self.request.get('callback')
         if (acc and password == acc.password):
             self.response.write("Correct log in")
         else:

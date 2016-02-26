@@ -1,15 +1,64 @@
-window.onload = function () {
+window.onload = function(){
+    $("#myProgress").hide();
+}
 
+function logIn() {
+    var username = $("#Username").val();
+    var password = $("#Password").val();
+
+    $.ajax({
+        type: 'GET',
+        url: "/login?username=" + username + "&password=" + password,
+        async: true,
+        contentType: 'application/javascript',
+        success: function (response) {
+            console.dir(response);
+            if (response == "Correct log in") {
+                $("#logIn").hide();
+                startGame();
+            } else if (response == "Incorrect log in") {
+                $("#Username").val("");
+                $("#Password").val("");
+                $("#Message").text("Incorrect log in details");
+            }
+        }
+    });
+}
+
+function createAccount() {
+    var username = $("#Username").val();
+    var password = $("#Password").val();
+
+    $.ajax({
+        type: 'GET',
+        url: "/createaccount?username=" + username + "&password=" + password,
+        async: true,
+        contentType: 'application/javascript',
+        success: function (response) {
+            console.dir(response);
+            if (response == "Account created") {
+                $("#logIn").hide();
+                startGame();
+            } else if (response == "Username in use") {
+                $("#Username").val("");
+                $("#Password").val("");
+                $("#Message").val("This account is already in use");
+            }
+        }
+    });
 }
 var game;
 
 function startGame() {
+    $("#myProgress").show();
     game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.CANVAS, '', {
         preload: preload,
         create: create,
         update: update
     });
+   
 }
+
 var items = new Array();
 var blocks;
 var chunks = new Array();
@@ -27,9 +76,22 @@ var inventoryControls;
 var inventoryTabButton;
 var updateInventory = false;
 var blockKeyData = new Array();
+var width = 0;
 
-function updateProgressBar(){
-    console.log(game.load.progress);
+function updateProgressBar() {
+    game.canvas.id = 'game';
+    //console.log(game.load.progress);
+    var elem = document.getElementById("myBar");   
+    if (game.load.progress <= 100) {
+        elem.style.width = game.load.progress + '%'; 
+        document.getElementById("label").innerHTML = game.load.progress * 1  + '%';
+    } 
+      
+    if(game.load.progress == 100){
+        $("#myBar").css('height', 0);
+        $("#game").css({'position': 'fixed', 'top': '0px'}); 
+        $("#myBar").height = 0;
+    }
 }
 
 function preload() {
