@@ -1,4 +1,4 @@
-window.onload = function(){
+window.onload = function () {
     $("#myProgress").hide();
 }
 
@@ -56,11 +56,12 @@ function startGame() {
         create: create,
         update: update
     });
-   
+
 }
 
 var items = new Array();
 var blocks;
+var trees;
 var chunks = new Array();
 var blocksA = new Array();
 var blocksPickedUp;
@@ -81,15 +82,18 @@ var width = 0;
 function updateProgressBar() {
     game.canvas.id = 'game';
     //console.log(game.load.progress);
-    var elem = document.getElementById("myBar");   
+    var elem = document.getElementById("myBar");
     if (game.load.progress <= 100) {
-        elem.style.width = game.load.progress + '%'; 
-        document.getElementById("label").innerHTML = game.load.progress * 1  + '%';
-    } 
-      
-    if(game.load.progress == 100){
+        elem.style.width = game.load.progress + '%';
+        document.getElementById("label").innerHTML = game.load.progress * 1 + '%';
+    }
+
+    if (game.load.progress == 100) {
         $("#myBar").css('height', 0);
-        $("#game").css({'position': 'fixed', 'top': '0px'}); 
+        $("#game").css({
+            'position': 'fixed',
+            'top': '0px'
+        });
         $("#myBar").height = 0;
     }
 }
@@ -173,6 +177,8 @@ function create() {
     player.body.collideWorldBounds = true;
     blocks = game.add.group();
     blocks.enableBody = true;
+    trees = game.add.group();
+    trees.enableBody = true;
     blocksPickedUp = game.add.group();
     blocksPickedUp.enableBody = true;
     game.camera.follow(player);
@@ -992,7 +998,7 @@ function update() {
                 }
                 if (tree == true) {
                     for (var q = 0; q < treeHeight; q++) {
-                        blocksA[blocksA.length] = blocks.create(e, 420 - (q * 70), 'tree'); //Creates a new block
+                        blocksA[blocksA.length] = trees.create(e, 420 - (q * 70), 'tree'); //Creates a new block
                         blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                         blocksA[blocksA.length - 1].blockX = e / 70;
                         blocksA[blocksA.length - 1].blockY = 420 - (q * 70);
@@ -1002,62 +1008,62 @@ function update() {
 
                         if (q == treeHeight - 1) {
                             //bottom layer
-                            blocksA[blocksA.length] = blocks.create(e - 70, 420 - (q * 70), 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e - 70, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e - 70 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
-                            blocksA[blocksA.length] = blocks.create(e - 140, 420 - (q * 70), 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e - 140, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e - 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
-                            blocksA[blocksA.length] = blocks.create(e - 210, 420 - (q * 70), 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e - 210, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e - 210 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
-                            blocksA[blocksA.length] = blocks.create(e + 70, 420 - (q * 70), 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e + 70, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 70 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
-                            blocksA[blocksA.length] = blocks.create(e + 140, 420 - (q * 70), 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e + 140, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
-                            blocksA[blocksA.length] = blocks.create(e + 210, 420 - (q * 70), 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e + 210, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 210 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             //second layer
-                            blocksA[blocksA.length] = blocks.create(e - 70, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e - 70, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
-                            blocksA[blocksA.length] = blocks.create(e - 140, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e - 140, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
-                            blocksA[blocksA.length] = blocks.create(e + 70, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e + 70, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
-                            blocksA[blocksA.length] = blocks.create(e + 140, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e + 140, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
@@ -1065,26 +1071,26 @@ function update() {
                             blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
 
-                            blocksA[blocksA.length] = blocks.create(e, 420 - (q * 70) - 70, 'tree'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e, 420 - (q * 70) - 70, 'tree'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 210 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             blocksA[blocksA.length - 1].MineLevel = items[10].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[10].Health;
                             //Third layer
-                            blocksA[blocksA.length] = blocks.create(e + 70, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e + 70, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
-                            blocksA[blocksA.length] = blocks.create(e - 70, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e - 70, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
-                            blocksA[blocksA.length] = blocks.create(e, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 210 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
@@ -1092,7 +1098,7 @@ function update() {
                             blocksA[blocksA.length - 1].Health = items[11].Health;
 
                             //fourth layer
-                            blocksA[blocksA.length] = blocks.create(e, 420 - (q * 70) - 210, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length] = trees.create(e, 420 - (q * 70) - 210, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
@@ -1407,16 +1413,15 @@ function test() {
 
         if (e == end) {
             var storedata = new Array();
-            storedata.push(new Array);
             console.log(start + " : " + end);
             for (var i = start; i < end; i++) {
                 if (i < end) {
-                    storedata[0].push(blocksA[i].key);
+                    storedata.push(blocksA[i].key + "," + blocksA[i].body.x + "," + blocksA[i].body.y);
                 }
             }
             start = e;
 
-            $.get("/save?blocks=" + storedata[0]);
+            $.get("/save?blocks=" + storedata);
         }
     }
 }
@@ -1433,15 +1438,39 @@ function test2() {
             //response.Data.Blocks - This is where the long string is
             var start = 0;
             var end = 0;
-            response.Data[0].Blocks = response.Data[0].Blocks + ",";
-            do {
-                var commaLocation = response.Data[0].Blocks.indexOf(",", end);
-                start = end;
-                end = commaLocation;
-                blockKeyData.push(response.Data[0].Blocks.substr(start, end - start));
-                start = end;
-                end++;
-            } while (end < response.Data[0].Blocks.length)
+            for (var e = 0; e < response.Data.length; e++) {
+                response.Data[e].Blocks = response.Data[e].Blocks + ",";
+            }
+            for (var e = 0; e < response.Data.length; e++) {
+                do {
+                    var commaLocation = response.Data[e].Blocks.indexOf(",", end);
+                    start = end;
+                    end = commaLocation;
+                    var name = response.Data[e].Blocks.substr(start, end - start);
+                    start = end;
+                    end++;
+
+                    commaLocation = response.Data[e].Blocks.indexOf(",", end);
+                    start = end;
+                    end = commaLocation;
+                    var X = response.Data[e].Blocks.substr(start, end - start);
+                    start = end;
+                    end++;
+
+                    commaLocation = response.Data[e].Blocks.indexOf(",", end);
+                    start = end;
+                    end = commaLocation;
+                    var Y = response.Data[e].Blocks.substr(start, end - start);
+                    start = end;
+                    end++;
+
+                    blockKeyData.push({
+                        Name: name,
+                        X: X,
+                        Y: Y
+                    });
+                } while (end < response.Data[e].Blocks.length)
+            }
         }
     });
 }

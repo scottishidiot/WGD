@@ -23,10 +23,14 @@ from webapp2_extras import json
 
 class arrangeData(ndb.Model):
 	blocks = ndb.StringProperty()
+	X = ndb.StringProperty()
+	Y = ndb.StringProperty()
 
 	def toJSON(self):
 		jsondata = {
-			"Blocks" : self.blocks
+			"Blocks" : self.blocks,
+            "X" : self.X,
+            "Y" : self.Y
 		}
 		return json.encode(jsondata)
     
@@ -40,13 +44,30 @@ class accountData(ndb.Model):
 		return json.encode(jsondata)
 
 class save(webapp2.RequestHandler):
+
     def get(self):
         self.response.headers['Access-Control-Allow-Origin'] = '*'
         self.response.headers['Access-Control'] = '*'
         callback = self.request.get('callback')
         blocks = self.request.get("blocks")
+        info = blocks.split(",")
+        blockName = ""
+        X = ""
+        Y = ""
+        counter = 0
+        for i in range(len(info)):
+            if counter == 2:
+                Y = Y + "," + info[i]
+                counter = -1
+            elif counter == 1:
+                X = X + "," + info[i]
+            else:
+                blockName = blockName + "," + info[i]
+            counter+=1
         data = arrangeData()
-        data.blocks = blocks
+        data.blocks = blockName
+        data.X = X
+        data.Y = Y
         data.put()
         
 class download(webapp2.RequestHandler):
