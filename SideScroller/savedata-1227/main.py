@@ -22,17 +22,18 @@ from google.appengine.ext import ndb
 from webapp2_extras import json
 
 class arrangeData(ndb.Model):
-	blocks = ndb.StringProperty()
-	X = ndb.StringProperty()
-	Y = ndb.StringProperty()
+    username = ndb.StringProperty()
+    blocks = ndb.StringProperty()
+    X = ndb.StringProperty()
+    Y = ndb.StringProperty()
 
-	def toJSON(self):
-		jsondata = {
-			"Blocks" : self.blocks,
+    def toJSON(self):
+        jsondata = {
+            "Blocks" : self.blocks,
             "X" : self.X,
             "Y" : self.Y
-		}
-		return json.encode(jsondata)
+        }
+        return json.encode(jsondata)
     
 class accountData(ndb.Model):
     username = ndb.StringProperty()
@@ -44,17 +45,18 @@ class accountData(ndb.Model):
 		return json.encode(jsondata)
 
 class save(webapp2.RequestHandler):
-
     def get(self):
         self.response.headers['Access-Control-Allow-Origin'] = '*'
         self.response.headers['Access-Control'] = '*'
         callback = self.request.get('callback')
         blocks = self.request.get("blocks")
+        username = self.request.get("username")
         info = blocks.split(",")
         blockName = ""
         X = ""
         Y = ""
         counter = 0
+        
         for i in range(len(info)):
             if counter == 2:
                 Y = Y + "," + info[i]
@@ -65,22 +67,38 @@ class save(webapp2.RequestHandler):
                 blockName = blockName + "," + info[i]
             counter+=1
         data = arrangeData()
+        data.username = username
         data.blocks = blockName
         data.X = X
         data.Y = Y
         data.put()
-        
+       
+class delete(webapp2.RequestHandler):
+    def get(self):
+        username = self.request.get("username")
+        delete = self.request.get("del");
+        if delete == "true":
+            content = arrangeData.query(arrangeData.username==username).fetch()
+            if content.count > 0:
+                for data in content:
+                    self.response.write(data)
+                    if data.username == username:
+                        self.response.write(data)
+                        data.key.delete();
+    
 class download(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Access-Control-Allow-Origin'] = '*'
         self.response.headers['Access-Control'] = '*'
         callback = self.request.get('callback')
-        response = callback + '({"Account":"test", "Data":[%s]})'
+        username = self.request.get("username")
+        response = callback + '({"Data":[%s]})'
         dataEntry = ""
         content = arrangeData.query()
         if content.count > 0:
             for data in content:
-                dataEntry += data.toJSON() + ','
+                if data.username == username:
+                    dataEntry += data.toJSON() + ','
         dataEntry = dataEntry[:-1]
         self.response.write(response % (dataEntry))
         
@@ -115,5 +133,6 @@ app = webapp2.WSGIApplication([
     ('/save', save),
     ('/retrieve', download),
     ('/login', login),
-    ('/createaccount', createaccount)
+    ('/createaccount', createaccount),
+    ('/delete', delete),
 ], debug=True)
