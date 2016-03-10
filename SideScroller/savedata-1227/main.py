@@ -21,7 +21,7 @@ import webapp2
 from google.appengine.ext import ndb
 from webapp2_extras import json
 
-class arrangeData(ndb.Model):
+class blockData(ndb.Model):
     username = ndb.StringProperty()
     blocks = ndb.StringProperty()
     X = ndb.StringProperty()
@@ -66,7 +66,7 @@ class save(webapp2.RequestHandler):
             else:
                 blockName = blockName + "," + info[i]
             counter+=1
-        data = arrangeData()
+        data = blockData()
         data.username = username
         data.blocks = blockName
         data.X = X
@@ -78,7 +78,7 @@ class delete(webapp2.RequestHandler):
         username = self.request.get("username")
         delete = self.request.get("del");
         if delete == "true":
-            content = arrangeData.query(arrangeData.username==username).fetch()
+            content = blockData.query(blockData.username==username).fetch()
             if content.count > 0:
                 for data in content:
                     self.response.write(data)
@@ -94,7 +94,7 @@ class download(webapp2.RequestHandler):
         username = self.request.get("username")
         response = callback + '({"Data":[%s]})'
         dataEntry = ""
-        content = arrangeData.query()
+        content = blockData.query()
         if content.count > 0:
             for data in content:
                 if data.username == username:

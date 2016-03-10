@@ -1565,7 +1565,7 @@ function ePressed() {
 
 //Server tests
 //This function sends data to the server
-function test() {
+function upload() {
     var dataLength = 0;
     var storeData = new Array();
     var start = 0;
@@ -1607,7 +1607,7 @@ function test() {
     }
 }
 //This function retrieves data from server
-function test2() {
+function retrieve() {
     blockKeyData = new Array();
     $.ajax({
         type: 'GET',
