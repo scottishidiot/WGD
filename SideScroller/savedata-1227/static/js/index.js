@@ -1,5 +1,7 @@
 window.onload = function () {
     $("#myProgress").hide();
+    $("#Username").val("g");
+    $("#Password").val("g");
 }
 var username;
 
@@ -52,6 +54,7 @@ var game;
 
 function startGame() {
     $("#myProgress").show();
+    retrieve();
     game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.CANVAS, '', {
         preload: preload,
         create: create,
@@ -60,24 +63,24 @@ function startGame() {
 
 }
 
-var items = new Array();
+var items = [];
 var blocks;
 var trees;
-var chunks = new Array();
-var blocksA = new Array();
+var chunks = [];
+var blocksA = [];
 var blocksPickedUp;
-var blocksAPickedUp = new Array();
+var blocksAPickedUp = [];
 var player;
 var bg;
 var inventoryBar;
 var inventory;
-var inventoryBarText = new Array();
+var inventoryBarText = [];
 var inventoryBarHighlighter;
 var reDrawBar = false;
 var inventoryControls;
 var inventoryTabButton;
 var updateInventory = false;
-var blockKeyData = new Array();
+var blockKeyData = [];
 var width = 0;
 var inventoryType;
 var startX;
@@ -169,7 +172,7 @@ function create() {
     player.Reach = 350; //This determine how far away the player can affect blocks
     player.MineLevel = 1; //This is the players MineLevel
     player.handItem = 0; //This is used to take the data from inventory
-    player.inventory = new Array();
+    player.inventory = [];
     for (var e = 0; e <= 29; e++) {
         player.inventory.push({
             Name: "Null",
@@ -191,11 +194,11 @@ function create() {
     loadItems();
     inventoryBar = game.add.sprite(window.innerWidth / 4, window.innerHeight / 10, 'inventoryBar');
     inventoryBar.fixedToCamera = true;
-    inventoryBar.inventory = new Array();
+    inventoryBar.inventory = [];
     for (var e = 0; e < 9; e++) {
         inventoryBar.inventory.push();
     }
-    inventoryBar.crafting = new Array();
+    inventoryBar.crafting = [];
     for (var e = 0; e < 4; e++) {
         inventoryBar.crafting.push({
             Key: "",
@@ -211,7 +214,7 @@ function create() {
     inventory.currentTab = 0;
     inventory.currentRow = 0;
     inventory.currentRowNumber = 0;
-    inventory.items = new Array();
+    inventory.items = [];
     inventory.items.crafting = new Array(9);
 
     inventory.items.crafting[0] = game.add.sprite(window.innerWidth / 4 + 40, window.innerHeight / 10 + 250, 'planks');
@@ -251,7 +254,7 @@ function create() {
     inventory.items.crafting[8].visible = false;
     inventory.items.crafting[8].fixedToCamera = true;
 
-    inventoryTabButton = new Array();
+    inventoryTabButton = [];
     inventoryTabButton.push({
         sprite: game.add.sprite(window.innerWidth / 4 + 120, window.innerHeight / 10 + 10, 'planks'),
         tabSprite: game.add.sprite(window.innerWidth / 4 + 55, window.innerHeight / 10 + 10, 'planks')
@@ -285,51 +288,51 @@ function create() {
     inventoryTabButton[1].tabSprite.events.onInputDown.add(changeTab, this);
 
     //X, Y, sprite_name, tab, row, rowNum, maxRow, craftingslots, - upto 9 different ingredients
-    InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'planks', 0, 0, 0, 0, 0, "planks");
-    
-    InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'craftingTable', 0, 1, 0, 1, 2, "planks", "planks", undefined, "planks", "planks");
-    
-    InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'furnace', 0, 1, 1, 1, 2, "stone", "stone", "stone", "stone", undefined, "stone", "stone", "stone", "stone");
+    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'planks', 0, 0, 0, 0, 0, "planks");
 
-    InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'woodPick', 1, 0, 0, 4, 3, "planks", "planks", "planks", undefined, "tree", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'craftingTable', 0, 1, 0, 1, 2, "planks", "planks", undefined, "planks", "planks");
 
-    InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'ironPick', 1, 0, 1, 4, 3, "iron_ore", "iron_ore", "iron_ore", undefined, "tree", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'furnace', 0, 1, 1, 1, 2, "stone", "stone", "stone", "stone", undefined, "stone", "stone", "stone", "stone");
 
-    InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'goldPick', 1, 0, 2, 4, 3, "gold_ore", "gold_ore", "gold_ore", undefined, "tree", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'woodPick', 1, 0, 0, 4, 3, "planks", "planks", "planks", undefined, "tree", undefined, undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'silverPick', 1, 0, 3, 4, 3, "silver_ore", "silver_ore", "silver_ore", undefined, "tree", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'ironPick', 1, 0, 1, 4, 3, "iron_ore", "iron_ore", "iron_ore", undefined, "tree", undefined, undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'diamondPick', 1, 0, 4, 4, 3, "diamond_ore", "diamond_ore", "diamond_ore", undefined, "tree", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'goldPick', 1, 0, 2, 4, 3, "gold_ore", "gold_ore", "gold_ore", undefined, "tree", undefined, undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'woodShovel', 1, 1, 0, 4, 3, undefined, "planks", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'silverPick', 1, 0, 3, 4, 3, "silver_ore", "silver_ore", "silver_ore", undefined, "tree", undefined, undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'ironShovel', 1, 1, 1, 4, 3, undefined, "iron_ore", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'diamondPick', 1, 0, 4, 4, 3, "diamond_ore", "diamond_ore", "diamond_ore", undefined, "tree", undefined, undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'goldShovel', 1, 1, 2, 4, 3, undefined, "gold_ore", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'woodShovel', 1, 1, 0, 4, 3, undefined, "planks", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'silverShovel', 1, 1, 3, 4, 3, undefined, "silver_ore", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'ironShovel', 1, 1, 1, 4, 3, undefined, "iron_ore", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'diamondShovel', 1, 1, 4, 4, 3, undefined, "diamond_ore", undefined, undefined, "tree", undefined, undefined, "tree", undefined); 
-    
-    InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'woodAxe', 1, 2, 0, 4, 3, undefined, "planks", "planks", undefined, "tree", "planks", undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'goldShovel', 1, 1, 2, 4, 3, undefined, "gold_ore", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'ironAxe', 1, 2, 1, 4, 3, undefined, "iron_ore", "iron_ore", undefined, "tree", "iron_ore", undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'silverShovel', 1, 1, 3, 4, 3, undefined, "silver_ore", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'goldAxe', 1, 2, 2, 4, 3, undefined, "gold_ore", "gold_ore", undefined, "tree", "gold_ore", undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'diamondShovel', 1, 1, 4, 4, 3, undefined, "diamond_ore", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'silverAxe', 1, 2, 3, 4, 3, undefined, "silver_ore", "silver_ore", undefined, "tree", "silver_ore", undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'woodAxe', 1, 2, 0, 4, 3, undefined, "planks", "planks", undefined, "tree", "planks", undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'diamondAxe', 1, 2, 4, 4, 3, undefined, "diamond_ore", "diamond_ore", undefined, "tree", "diamond_ore", undefined, "tree", undefined);   
-    
-    InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'woodSword', 1, 3, 0, 4, 3, undefined, "planks", undefined, undefined, "planks", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'ironAxe', 1, 2, 1, 4, 3, undefined, "iron_ore", "iron_ore", undefined, "tree", "iron_ore", undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'ironSword', 1, 3, 1, 4, 3, undefined, "iron_ore", undefined, undefined, "iron_ore", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'goldAxe', 1, 2, 2, 4, 3, undefined, "gold_ore", "gold_ore", undefined, "tree", "gold_ore", undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'goldSword', 1, 3, 2, 4, 3, undefined, "gold_ore", undefined, undefined, "gold_ore", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'silverAxe', 1, 2, 3, 4, 3, undefined, "silver_ore", "silver_ore", undefined, "tree", "silver_ore", undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'silverSword', 1, 3, 3, 4, 3, undefined, "silver_ore", undefined, undefined, "silver_ore", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'diamondAxe', 1, 2, 4, 4, 3, undefined, "diamond_ore", "diamond_ore", undefined, "tree", "diamond_ore", undefined, "tree", undefined);
 
-    InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'diamondSword', 1, 3, 4, 4, 3, undefined, "diamond_ore", undefined, undefined, "diamond_ore", undefined, undefined, "tree", undefined);
+    new InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'woodSword', 1, 3, 0, 4, 3, undefined, "planks", undefined, undefined, "planks", undefined, undefined, "tree", undefined);
+
+    new InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'ironSword', 1, 3, 1, 4, 3, undefined, "iron_ore", undefined, undefined, "iron_ore", undefined, undefined, "tree", undefined);
+
+    new InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'goldSword', 1, 3, 2, 4, 3, undefined, "gold_ore", undefined, undefined, "gold_ore", undefined, undefined, "tree", undefined);
+
+    new InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'silverSword', 1, 3, 3, 4, 3, undefined, "silver_ore", undefined, undefined, "silver_ore", undefined, undefined, "tree", undefined);
+
+    new InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'diamondSword', 1, 3, 4, 4, 3, undefined, "diamond_ore", undefined, undefined, "diamond_ore", undefined, undefined, "tree", undefined);
 
 
     for (var i = 0; i < inventory.items.length; i++) {
@@ -874,17 +877,17 @@ function HUD() {
     reDrawBar = false;
 }
 
-function startDrag(block){
+function startDrag(block) {
     startX = block.x;
     startY = block.y;
 }
 
-function stopDrag(block){
+function stopDrag(block) {
     var loopCount = 0;
-    for(var e = 0; e < inventoryBar.inventory.length; e++){
+    for (var e = 0; e < inventoryBar.inventory.length; e++) {
         if (block.x > inventoryBar.inventory[e].x && block.x < inventoryBar.inventory[e].x + inventoryBar.inventory[e].width &&
-        block.y > inventoryBar.inventory[e].y && block.y < inventoryBar.inventory[e].y + inventoryBar.inventory[e].height){
-            console.log("This collides with: " +  inventoryBar.inventory[e].key);
+            block.y > inventoryBar.inventory[e].y && block.y < inventoryBar.inventory[e].y + inventoryBar.inventory[e].height) {
+            console.log("This collides with: " + inventoryBar.inventory[e].key);
             //Use .number to see which position they are in the array
             var clickedBlockData;
             for (var i = 0; i < items.length; i++) {
@@ -925,8 +928,7 @@ function stopDrag(block){
             HUD();
             break;
 
-        }
-        else if(e == inventoryBar.inventory.length - 1){
+        } else if (e == inventoryBar.inventory.length - 1) {
             loopCount = 0;
             for (var i = 0; i < inventoryBar.inventory.length; i++) {
                 inventoryBar.inventory[i].kill();
@@ -1048,7 +1050,7 @@ function update() {
             furthestBlock = blocksA[e].x
         }
     }
-    if (blocksA.length == 0 || furthestBlock < player.body.x + 1000) { //Checks if last block is less than 700 away
+    if (blocksA.length == 0 || furthestBlock < player.body.x + 1000) { //Checks if last block is less than 1000 away
         if (blocksA.length != 0) {
             var first = 0;
             var blockNumber;
@@ -1068,11 +1070,13 @@ function update() {
             var tree = false;
             var treeHeight = Math.floor(Math.random() * (6 - 3) + 3);
             if (treeChance == 1 && e > (lastTree + 700)) {
-                tree = true;
-                lastTree = e;
+                if (blockKeyData.length == 0) {
+                    tree = true;
+                    lastTree = e;
+                }
             }
             for (var i = 490; i <= 4000; i += 70) { //Changes the Y value for the loop
-                if (i == 490) { //Checks if it's the top layer
+                if (i == 490 && blockKeyData.length == 0) { //Checks if it's the top layer
                     //Checks if the array is empty
                     blocksA[blocksA.length] = blocks.create(e, i, 'grass'); //Creates a new block
                     blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
@@ -1083,81 +1087,26 @@ function update() {
                     blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                     blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
                     blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
+                    if(blockKeyData.length > 0){
+                        if(blockKeyData[0].Name == "unbreakable"){
+                            blockKeyData.splice(0, 1);
+                        }
+                    }
                 } else {
-                    var randomBlock = Math.floor(Math.random() * (8 - 1) + 1);
-                    var oreChance;
-                    if (randomBlock == 3 && i / 70 > 25) { //Iron
-                        oreChance = Math.floor(Math.random() * (100 - 1) + 1);
-                        if (oreChance > 50) {
-                            randomBlock = -1;
+                    if(blockKeyData.length > 0){
+                        for(var p = 0; p < blockKeyData.length; p++){
+                            if(blockKeyData[p].Name == "unbreakable"){
+                                blockKeyData.splice(0, 1);
+                            }
+                            groundGen(e,i);
+                            p = 0;
                         }
-                    } else if (randomBlock == 4 && i / 70 > 40) { //Gold
-                        oreChance = Math.floor(Math.random() * (100 - 1) + 1);
-                        if (oreChance > 20) {
-                            randomBlock = -1;
-                        }
-                    } else if (randomBlock == 5 && i / 70 > 40) { //Silver
-                        oreChance = Math.floor(Math.random() * (100 - 1) + 1);
-                        if (oreChance > 30) {
-                            randomBlock = -1;
-                        }
-                    } else if (randomBlock == 6) { //Diamond
-                        oreChance = Math.floor(Math.random() * (100 - 1) + 1);
-                        if (oreChance > 10) {
-                            randomBlock = -1;
-                        }
-                    }
-                    if (i / 70 >= 2 && randomBlock == 1) {
-                        blocksA[blocksA.length] = blocks.create(e, i, 'dirt'); //Creates a new block
-                        blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
-                        blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
-                        blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
-                    } else if (i / 70 >= 11 && randomBlock == 2) {
-                        blocksA[blocksA.length] = blocks.create(e, i, 'coal_block'); //Creates a new block
-                        blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
-                        blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
-                        blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
-                    } else if (i / 70 >= 16 && randomBlock == 3) {
-                        blocksA[blocksA.length] = blocks.create(e, i, 'iron_block'); //Creates a new block
-                        blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
-                        blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
-                        blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
-                    } else if (i / 70 >= 30 && randomBlock == 4) {
-                        blocksA[blocksA.length] = blocks.create(e, i, 'gold_block'); //Creates a new block
-                        blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
-                        blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
-                        blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
-                    } else if (i / 70 >= 19 && randomBlock == 5) {
-                        blocksA[blocksA.length] = blocks.create(e, i, 'silver_block'); //Creates a new block
-                        blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
-                        blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
-                        blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
-                    } else if (i / 70 > 40 && randomBlock == 6) {
-                        blocksA[blocksA.length] = blocks.create(e, i, 'diamond_block'); //Creates a new block
-                        blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
-                        blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
-                        blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
-                    } else if (i / 70 > 7) {
-                        if (i / 70 == 8) {
-                            blocksA[blocksA.length] = blocks.create(e, i, 'dirt'); //Creates a new block
-                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
-                            blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
-                            blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
-                        } else {
-                            blocksA[blocksA.length] = blocks.create(e, i, 'stone'); //Creates a new block
-                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
-                            blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
-                            blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
-                        }
+                        e = 1890;
+                    } else {
+                        groundGen(e, i);
                     }
                 }
-                for (var j = 0; j < items.length; j++) {
-                    if (items[j].Name == blocksA[blocksA.length - 1].key) {
-                        blocksA[blocksA.length - 1].MineLevel = items[j].MineLevel;
-                        blocksA[blocksA.length - 1].Health = items[j].Health;
-                    }
-                }
-                if (tree == true) {
+                if (tree == true && blockKeyData.length == 0) {
                     for (var q = 0; q < treeHeight; q++) {
                         blocksA[blocksA.length] = trees.create(e, 420 - (q * 70), 'tree'); //Creates a new block
                         blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
@@ -1269,11 +1218,12 @@ function update() {
                         }
                     }
                 }
+
             }
         }
     }
     //End of ground generation
-    //Start of performance imporvement
+    //Start of performance improvement
     var starting = null,
         ending = null;
     for (var e = 0; e < blocksA.length; e++) {
@@ -1301,7 +1251,11 @@ function update() {
     if (player.body.velocity.x < 0) {
         for (var e = 0; e < chunks.length; e++) {
             if (chunks[e].body.x > (player.body.x - 1400)) {
-                blocksA.unshift(blocks.create(chunks[e].body.x, chunks[e].body.y, chunks[e].key));
+                if(chunks[e].key == "tree" || chunks[e].key == "leaf"){
+                    blocksA.unshift(trees.create(chunks[e].body.x, chunks[e].body.y, chunks[e].key));
+                } else {
+                    blocksA.unshift(blocks.create(chunks[e].body.x, chunks[e].body.y, chunks[e].key));
+                }
                 blocksA[0].body.immovable = true; //Makes the block immovable
                 blocksA[0].blockX = chunks[e].body.x / 70;
                 blocksA[0].blockY = chunks[e].body.y / 70;
@@ -1345,7 +1299,7 @@ function update() {
     }
 
     //End of player movement
-    var keys = new Array();
+    var keys = [];
     keys[0] = game.input.keyboard.addKey(Phaser.Keyboard.ONE);
     keys[1] = game.input.keyboard.addKey(Phaser.Keyboard.TWO);
     keys[2] = game.input.keyboard.addKey(Phaser.Keyboard.THREE);
@@ -1373,6 +1327,128 @@ function update() {
         }
     }
     //End of HUD update
+}
+
+
+function groundGen(e, i) {
+    if (blockKeyData.length == 0) {
+        var randomBlock = Math.floor(Math.random() * (8 - 1) + 1);
+        var oreChance;
+        if (randomBlock == 3 && i / 70 > 25) { //Iron
+            oreChance = Math.floor(Math.random() * (100 - 1) + 1);
+            if (oreChance > 50) {
+                randomBlock = -1;
+            }
+        } else if (randomBlock == 4 && i / 70 > 40) { //Gold
+            oreChance = Math.floor(Math.random() * (100 - 1) + 1);
+            if (oreChance > 20) {
+                randomBlock = -1;
+            }
+        } else if (randomBlock == 5 && i / 70 > 40) { //Silver
+            oreChance = Math.floor(Math.random() * (100 - 1) + 1);
+            if (oreChance > 30) {
+                randomBlock = -1;
+            }
+        } else if (randomBlock == 6) { //Diamond
+            oreChance = Math.floor(Math.random() * (100 - 1) + 1);
+            if (oreChance > 10) {
+                randomBlock = -1;
+            }
+        }
+        if (i / 70 >= 2 && randomBlock == 1) {
+            blocksA[blocksA.length] = blocks.create(e, i, 'dirt'); //Creates a new block
+            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+            blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
+            blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
+        } else if (i / 70 >= 11 && randomBlock == 2) {
+            blocksA[blocksA.length] = blocks.create(e, i, 'coal_block'); //Creates a new block
+            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+            blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
+            blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
+        } else if (i / 70 >= 16 && randomBlock == 3) {
+            blocksA[blocksA.length] = blocks.create(e, i, 'iron_block'); //Creates a new block
+            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+            blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
+            blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
+        } else if (i / 70 >= 30 && randomBlock == 4) {
+            blocksA[blocksA.length] = blocks.create(e, i, 'gold_block'); //Creates a new block
+            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+            blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
+            blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
+        } else if (i / 70 >= 19 && randomBlock == 5) {
+            blocksA[blocksA.length] = blocks.create(e, i, 'silver_block'); //Creates a new block
+            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+            blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
+            blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
+        } else if (i / 70 > 40 && randomBlock == 6) {
+            blocksA[blocksA.length] = blocks.create(e, i, 'diamond_block'); //Creates a new block
+            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+            blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
+            blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
+        } else if (i / 70 > 7) {
+            if (i / 70 == 8) {
+                blocksA[blocksA.length] = blocks.create(e, i, 'dirt'); //Creates a new block
+                blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
+                blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
+            } else {
+                blocksA[blocksA.length] = blocks.create(e, i, 'stone'); //Creates a new block
+                blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
+                blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
+            }
+        }
+    } else if (blockKeyData.length > 0) {
+        if(blockKeyData[0].X == 284){
+            console.log("");
+        }
+        if (blockKeyData[0].Name != "leaf") {
+            if (blockKeyData[0].Name != "tree") {
+                e = parseInt(blockKeyData[0].X);
+                i = parseInt(blockKeyData[0].Y);
+                blocksA[blocksA.length] = blocks.create(e, i, blockKeyData[0].Name); //Creates a new block
+                blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
+                blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
+                blockKeyData.splice(0, 1);
+                if(blockKeyData.length == 0){
+                    e = 3000;
+                    i = 4000;
+                }
+            }
+            else{
+                e = parseInt(blockKeyData[0].X);
+                i = parseInt(blockKeyData[0].Y);
+                blocksA[blocksA.length] = trees.create(e, i, blockKeyData[0].Name); //Creates a new block
+                blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
+                blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
+                blockKeyData.splice(0, 1);
+                if(blockKeyData.length == 0){
+                    e = 3000;
+                    i = 4000;
+                }
+            }
+        } else {
+            e = parseInt(blockKeyData[0].X);
+            i = parseInt(blockKeyData[0].Y);
+            blocksA[blocksA.length] = trees.create(e, i, blockKeyData[0].Name); //Creates a new block
+            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+            blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
+            blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
+            blockKeyData.splice(0, 1);
+            if(blockKeyData.length == 0){
+                e = 3000;
+                i = 4000;
+            }
+        }
+    }
+    for (var j = 0; j < items.length; j++) {
+        if (items[j].Name == blocksA[blocksA.length - 1].key) {
+            blocksA[blocksA.length - 1].MineLevel = items[j].MineLevel;
+            blocksA[blocksA.length - 1].Health = items[j].Health;
+        }
+    }
 }
 
 /**
@@ -1515,15 +1591,18 @@ function ePressed() {
             inventoryTabButton[e].tabSprite.visible = false;
         }
         for (var e = 0; e < inventoryBar.inventory.length; e++) {
-            inventoryBar.inventory[e].kill();
-            inventoryBar.inventory.splice(e, 1);
-            inventoryBarText[loopCount].text = "";
-            inventoryBarText[loopCount] = "Null";
-            loopCount++;
-            e = -1;
+            if (inventoryBar.inventory != undefined) {
+                inventoryBar.inventory[e].kill();
+                inventoryBar.inventory.splice(e, 1);
+                inventoryBarText[loopCount].text = "";
+                inventoryBarText[loopCount] = "Null";
+                loopCount++;
+                e = -1;
+            }
         }
         HUD();
     } else { //Inventory bar visible
+        upload();
         for (var e = 0; e < inventoryTabButton.length; e++) {
             inventoryTabButton[e].sprite.visible = true;
             inventoryTabButton[e].tabSprite.visible = true;
@@ -1531,7 +1610,7 @@ function ePressed() {
         inventory.currentRowNumber = 0;
         updateInventory = false;
         inventoryBar.visible = false;
-        inventoryControls = new Array();
+        inventoryControls = [];
         inventoryControls[0] = game.input.keyboard.addKey(Phaser.Keyboard.A);
         inventoryControls[0].onDown.add(controlInventoryScreen, this);
         inventoryControls[1] = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
@@ -1551,12 +1630,14 @@ function ePressed() {
         inventoryType = 3;
         inventory.visible = true;
         for (var e = 0; e < inventoryBar.inventory.length; e++) {
-            inventoryBar.inventory[e].kill();
-            inventoryBar.inventory.splice(e, 1);
-            inventoryBarText[loopCount].text = "";
-            inventoryBarText[loopCount] = "Null";
-            loopCount++;
-            e = -1;
+            if (inventoryBar.inventory != undefined) {
+                inventoryBar.inventory[e].kill();
+                inventoryBar.inventory.splice(e, 1);
+                inventoryBarText[loopCount].text = "";
+                inventoryBarText[loopCount] = "Null";
+                loopCount++;
+                e = -1;
+            }
         }
         HUD();
         controlInventoryScreen();
@@ -1567,48 +1648,62 @@ function ePressed() {
 //This function sends data to the server
 function upload() {
     var dataLength = 0;
-    var storeData = new Array();
+    var storeData = [];
     var start = 0;
     var end;
     var del = true;
+    var uploadData = false;
     for (var e = 0; e < blocksA.length; e++) {
         if (dataLength + blocksA[e].key.length + blocksA[e].body.x.toString().length + blocksA[e].body.y.toString().length < 500) {
             storeData.push(blocksA[e].key + "," + blocksA[e].body.x + "," + blocksA[e].body.y);
             dataLength = dataLength + blocksA[e].key.length + blocksA[e].body.x.toString().length + blocksA[e].body.y.toString().length;
-        } else {
+            uploadData = false;
             end = e;
+        } else {
+            uploadData = true;
+        }
+        if(uploadData == true || e == blocksA.length - 1){
+            uploadData = false;
             console.log("Pushing: " + start + " : " + end);
             start = e;
-            if(del == true){
+            if(e + 10 < blocksA.length) {
+                e -= 1;
+            }
+            if (del == true) {
                 $.get("/delete?username=" + username + "&del=" + del);
                 del = false;
             }
             $.get("/save?username=" + username + "&blocks=" + storeData);
-            storeData = new Array();
+            storeData = [];
             dataLength = 0;
         }
     }
     dataLength = 0;
-    storeData = new Array();
+    storeData = [];
     start = 0;
-    end;
+    end = 0;
     for (var e = 0; e < chunks.length; e++) {
         if (dataLength + chunks[e].key.length + chunks[e].body.x.toString().length + chunks[e].body.y.toString().length < 500) {
             storeData.push(chunks[e].key + "," + chunks[e].body.x + "," + chunks[e].body.y);
             dataLength = dataLength + chunks[e].key.length + chunks[e].body.x.toString().length + chunks[e].body.y.toString().length;
-        } else {
+            uploadData = false;
             end = e;
+        } else{
+            uploadData = true;
+        }
+        if(uploadData == true || e == chunks.length - 1){
+            uploadData = false;
             console.log("Pushing: " + start + " : " + end);
             start = e;
             $.get("/save?username=" + username + "&blocks=" + storeData);
-            storeData = new Array();
+            storeData = [];
             dataLength = 0;
         }
     }
 }
 //This function retrieves data from server
 function retrieve() {
-    blockKeyData = new Array();
+    blockKeyData = [];
     $.ajax({
         type: 'GET',
         url: "/retrieve?username=" + username,
@@ -1620,9 +1715,9 @@ function retrieve() {
             //response.Data[0].Blocks
             //response.Data[0].X
             //response.Data[0].Y
-            var name
-            var x
-            var y
+            var name;
+            var x;
+            var y;
             for (var e = 0; e < response.Data.length; e++) {
                 response.Data[e].Blocks = response.Data[e].Blocks;
                 response.Data[e].X = response.Data[e].X;
@@ -1643,8 +1738,14 @@ function retrieve() {
                         X: x[e],
                         Y: y[e]
                     });
+                    blockKeyData[e].X = parseInt(blockKeyData[e].X);
+                    blockKeyData[e].Y = parseInt(blockKeyData[e].Y);
                 }
             }
+            blockKeyData.sort(function (a, b) {
+  if (a.X == b.X) return a.Y - b.Y;
+  return a.X - b.X;
+            });
         }
     });
 }
