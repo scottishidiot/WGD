@@ -18,7 +18,7 @@ function logIn() {
             console.dir(response);
             if (response == "Correct log in") {
                 $("#logIn").hide();
-                startGame();
+                retrieve();
             } else if (response == "Incorrect log in") {
                 $("#Username").val("");
                 $("#Password").val("");
@@ -41,7 +41,7 @@ function createAccount() {
             console.dir(response);
             if (response == "Account created") {
                 $("#logIn").hide();
-                startGame();
+                retrieve();
             } else if (response == "Username in use") {
                 $("#Username").val("");
                 $("#Password").val("");
@@ -54,7 +54,6 @@ var game;
 
 function startGame() {
     $("#myProgress").show();
-    retrieve();
     game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.CANVAS, '', {
         preload: preload,
         create: create,
@@ -110,14 +109,14 @@ function preload() {
     game.load.image('player', 'Assets/GameImages/Player/p1_front.png');
     game.load.image('playerHurt', 'Assets/GameImages/Player/p1_hurt.png');
     game.load.image('playerJump', 'Assets/GameImages/Player/p1_jump.png');
-    game.load.image('grass', 'Assets/GameImages/Blocks/dirt_grass.png', 70, 70);
-    game.load.image('dirt', 'Assets/GameImages/Blocks/dirt.png', 70, 70);
-    game.load.image('coal_block', 'Assets/GameImages/Blocks/stone_coal_alt.png', 70, 70);
-    game.load.image('stone', 'Assets/GameImages/Blocks/stone.png', 70, 70);
-    game.load.image('iron_block', 'Assets/GameImages/Blocks/stone_browniron_alt.png', 70, 70);
-    game.load.image('gold_block', 'Assets/GameImages/Blocks/stone_gold_alt.png', 70, 70);
-    game.load.image('silver_block', 'Assets/GameImages/Blocks/stone_silver_alt.png', 70, 70);
-    game.load.image('diamond_block', 'Assets/GameImages/Blocks/stone_diamond_alt.png', 70, 70);
+    game.load.image('grass', 'Assets/GameImages/Blocks/dirt_grass.png');
+    game.load.image('dirt', 'Assets/GameImages/Blocks/dirt.png');
+    game.load.image('coal_block', 'Assets/GameImages/Blocks/stone_coal_alt.png');
+    game.load.image('stone', 'Assets/GameImages/Blocks/stone.png');
+    game.load.image('iron_block', 'Assets/GameImages/Blocks/stone_browniron_alt.png');
+    game.load.image('gold_block', 'Assets/GameImages/Blocks/stone_gold_alt.png');
+    game.load.image('silver_block', 'Assets/GameImages/Blocks/stone_silver_alt.png');
+    game.load.image('diamond_block', 'Assets/GameImages/Blocks/stone_diamond_alt.png');
     game.load.image('unbreakable', 'Assets/GameImages/Blocks/greystone.png');
     game.load.image('bgAbove', 'Assets/GameImages/Background/bg.png');
     game.load.image('bgBelow', 'Assets/GameImages/Background/bg_castle.png');
@@ -191,7 +190,7 @@ function create() {
     blocksPickedUp = game.add.group();
     blocksPickedUp.enableBody = true;
     game.camera.follow(player);
-    loadItems();
+    new loadItems();
     inventoryBar = game.add.sprite(window.innerWidth / 4, window.innerHeight / 10, 'inventoryBar');
     inventoryBar.fixedToCamera = true;
     inventoryBar.inventory = [];
@@ -288,7 +287,7 @@ function create() {
     inventoryTabButton[1].tabSprite.events.onInputDown.add(changeTab, this);
 
     //X, Y, sprite_name, tab, row, rowNum, maxRow, craftingslots, - upto 9 different ingredients
-    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'planks', 0, 0, 0, 0, 0, "planks");
+    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'planks', 0, 0, 0, 0, 0, "tree");
 
     new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'craftingTable', 0, 1, 0, 1, 2, "planks", "planks", undefined, "planks", "planks");
 
@@ -404,6 +403,8 @@ function InvetoryItems(X, Y, name, Tab, Row, RowNum, MaxRow, craftingSlot, slotO
     if (slotNine != undefined) {
         inventory.items[inventory.items.length - 1].Requirements[8] = slotNine;
     }
+    inventory.items[inventory.items.length - 1].sprite.inputEnabled = true;
+    inventory.items[inventory.items.length - 1].sprite.events.onInputDown.add(crafting, this);
 }
 
 /**
@@ -413,7 +414,7 @@ function InvetoryItems(X, Y, name, Tab, Row, RowNum, MaxRow, craftingSlot, slotO
 function changeTab(data) {
     inventory.currentTab = data.tabNum;
     updateInventory = true;
-    ePressed();
+    new ePressed();
 }
 
 /**
@@ -461,6 +462,7 @@ function loadItems() {
     items.push(new ItemsData("gold_ore", 1, 3, 1, false, 1, null));
     items.push(new ItemsData("diamond_ore", 1, 3, 1, false, 1, null));
     items.push(new ItemsData("tree", 1, 3, 1, true, 1, null));
+    items.push(new ItemsData("planks", 1, 3, 1, true, 1, null));
     items.push(new ItemsData("leaf", 1, 3, 1, false, 1, null));
     items.push(new ItemsData("treeSeed", 1, 3, 1, true, 1, 15));
     items.push(new ItemsData("woodPick", 1, 3, 1, false, 2, null));
@@ -509,10 +511,10 @@ function mouseClicked() {
         if ((mouseX < player.body.x + player.Reach && mouseX > player.body.x - player.Reach) && (mouseY < player.body.y + player.Reach && mouseY > player.body.y - player.Reach)) { //This checks that it is within a set distance from the player
             for (var e = 0; e < blocksA.length; e++) { //Loops through all blocks and checks position
                 if (blockStartX == blocksA[e].x && blockStartY == blocksA[e].y && blocksA[e].alive == true) { //Checks if positions are the same
-                    if (blocksA[e].Health >= 1 && blocksA[e].MineLevel <= player.MineLevel) { //Checks the Health of the block
-                        blocksA[e].Health--; //Damages the block
+                    if (blocksA[e].health >= 1 && blocksA[e].MineLevel <= player.MineLevel) { //Checks the Health of the block
+                        blocksA[e].health--; //Damages the block
                         break;
-                    } else if (blocksA[e].Health <= 0 && blocksA[e].MineLevel <= player.MineLevel) {
+                    } else if (blocksA[e].health <= 0 && blocksA[e].MineLevel <= player.MineLevel) {
                         var minX = blocksA[e].body.x + 10; //Random X minimum
                         var maxX = blocksA[e].body.x + (blocksA[e].body.width - 10); //Random X maximum
                         var randomX = Math.floor(Math.random() * (maxX - minX) + minX); //Finds a random X
@@ -540,7 +542,7 @@ function mouseClicked() {
                         console.log("Block X: " + blocksA[e].blockX + " Block Y: " + blocksA[e].blockY);
                         blocksA[e].kill(); //Kills the block
                         blocksA.splice(e, 1);
-                        HUD(); //Updates the HUD
+                        new HUD(); //Updates the HUD
                         break; //Breaks the loop
                     } else {
                         break;
@@ -594,7 +596,7 @@ function mouseClicked() {
                     }
                 }
             }
-            HUD();
+            new HUD();
         }
     }
 }
@@ -925,7 +927,7 @@ function stopDrag(block) {
             }
 
             reDrawBar = true;
-            HUD();
+            new HUD();
             break;
 
         } else if (e == inventoryBar.inventory.length - 1) {
@@ -940,7 +942,7 @@ function stopDrag(block) {
             }
 
             reDrawBar = true;
-            HUD();
+            new HUD();
         }
     }
 
@@ -950,8 +952,58 @@ function stopDrag(block) {
  *
  * @constructor
  */
-function crafting() {
+function crafting(first) {
+    var itemClickedRequirements = [];
+    var craftingIngredients = [];
+    for(var w = 0; w < inventory.items.length; w++){
+        if(first.key == inventory.items[w].sprite.key){
+            itemClickedRequirements = inventory.items[w].Requirements;
+            break;
+        }
+    }
+    if(itemClickedRequirements != undefined){
+        for(var r = 0; r < itemClickedRequirements.length; r++){
+            for(var t = 0; t < player.inventory.length; t++) {
+                if (player.inventory[t].Name == itemClickedRequirements[r]) {
+                    itemClickedRequirements[r] = undefined;
+                    craftingIngredients.push(t);
+                }
+                if(r == itemClickedRequirements.length - 1){
+                    if(itemClickedRequirements[0] == undefined && itemClickedRequirements[1] == undefined
+                        && itemClickedRequirements[2] == undefined && itemClickedRequirements[3] == undefined
+                        && itemClickedRequirements[4] == undefined && itemClickedRequirements[5] == undefined
+                        && itemClickedRequirements[6] == undefined && itemClickedRequirements[7] == undefined
+                        && itemClickedRequirements[8] == undefined){
+                        if(craftingIngredients.length < 9){
+                            do{
+                                craftingIngredients.push(undefined);
+                            }while(craftingIngredients.length < 9)
 
+                        }
+                        if((craftingIngredients[0] == undefined || player.inventory[craftingIngredients[0]].Amount > 0)
+                            && (craftingIngredients[1] == undefined || player.inventory[craftingIngredients[1]].Amount > 0)
+                            && (craftingIngredients[2] == undefined || player.inventory[craftingIngredients[2]].Amount > 0)
+                            && (craftingIngredients[3] == undefined || player.inventory[craftingIngredients[3]].Amount > 0)
+                            && (craftingIngredients[4] == undefined || player.inventory[craftingIngredients[4]].Amount > 0)
+                            && (craftingIngredients[5] == undefined || player.inventory[craftingIngredients[5]].Amount > 0)
+                            && (craftingIngredients[6] == undefined || player.inventory[craftingIngredients[6]].Amount > 0)
+                            && (craftingIngredients[7] == undefined || player.inventory[craftingIngredients[7]].Amount > 0)
+                            && (craftingIngredients[8] == undefined || player.inventory[craftingIngredients[8]].Amount > 0)){
+                            for(var y = 0; y < craftingIngredients.length; y++){
+                                if(craftingIngredients[y] != undefined){
+                                    player.inventory[craftingIngredients[y]].Amount--;
+                                    blocksAPickedUp[blocksAPickedUp.length] = blocksPickedUp.create(player.body.x, player.body.y, first.key);
+                                    blocksAPickedUp[blocksAPickedUp.length - 1].scale.setTo(.2, .2);
+                                }
+                            }
+                            console.log("Can craft");
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -983,7 +1035,7 @@ function pickUpItems(first, second) {
                         player.inventory[e].Amount++;
                     }
                     second.kill(); //This kills the dropped block
-                    HUD(); //Updates the HUD
+                    new HUD(); //Updates the HUD
                     break; //Breaks the loop
                 }
             }
@@ -1018,7 +1070,7 @@ function update() {
         blocksAPickedUp[e].body.velocity.y = 100;
     }
     //End of blocks velocity
-    // Start of Updates player mineLevel
+    // Start of Updates player MineLevel
     if (player.inventory[player.handItem].Name != "Null") {
         player.MineLevel = player.inventory[player.handItem].Strength;
     }
@@ -1082,6 +1134,12 @@ function update() {
                     blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                     blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
                     blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
+                    for (var j = 0; j < items.length; j++) {
+                        if (items[j].Name == blocksA[blocksA.length - 1].key) {
+                            blocksA[blocksA.length - 1].MineLevel  = items[j].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[j].Health;
+                        }
+                    }
                 } else if (i >= 3500) { //This is the bottom layer
                     blocksA[blocksA.length] = blocks.create(e, i, 'unbreakable'); //Creates a new block
                     blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
@@ -1094,14 +1152,19 @@ function update() {
                     }
                 } else {
                     if(blockKeyData.length > 0){
+                        var finalE;
                         for(var p = 0; p < blockKeyData.length; p++){
+                            if(blockKeyData[p].Name != "tree" && blockKeyData[p].Name == "leaf"){
+                                finalE = blockKeyData[p].X;
+                            }
                             if(blockKeyData[p].Name == "unbreakable"){
                                 blockKeyData.splice(0, 1);
                             }
                             groundGen(e,i);
                             p = 0;
                         }
-                        e = 1890;
+                        e = finalE;
+
                     } else {
                         groundGen(e, i);
                     }
@@ -1113,7 +1176,7 @@ function update() {
                         blocksA[blocksA.length - 1].blockX = e / 70;
                         blocksA[blocksA.length - 1].blockY = 420 - (q * 70);
                         tree = false;
-                        blocksA[blocksA.length - 1].MineLevel = items[10].MineLevel;
+                        blocksA[blocksA.length - 1].MineLevel  = items[10].MineLevel;
                         blocksA[blocksA.length - 1].Health = items[10].Health;
 
                         if (q == treeHeight - 1) {
@@ -1122,89 +1185,89 @@ function update() {
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e - 70 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e - 140, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e - 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e - 210, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e - 210 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e + 70, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 70 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e + 140, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e + 210, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 210 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             //second layer
                             blocksA[blocksA.length] = trees.create(e - 70, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e - 140, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e + 70, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e + 140, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
 
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
 
                             blocksA[blocksA.length] = trees.create(e, 420 - (q * 70) - 70, 'tree'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 210 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel = items[10].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[10].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[10].Health;
                             //Third layer
                             blocksA[blocksA.length] = trees.create(e + 70, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e - 70, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 210 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
 
                             //fourth layer
@@ -1213,7 +1276,7 @@ function update() {
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             tree = false;
-                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                         }
                     }
@@ -1228,23 +1291,10 @@ function update() {
         ending = null;
     for (var e = 0; e < blocksA.length; e++) {
         if (blocksA[e].body.x < (player.body.x - 1400)) {
-            if (starting != null) {
-                if (blocksA[e].body.x < blocksA[starting].body.x) {
-                    console.log("");
-                }
-            }
-            if (starting == null || blocksA[e].body.x < blocksA[starting].body.x) {
-                starting = e;
-            } else if (ending == null || blocksA[e].body.x <= blocksA[ending].body.x) {
-                ending = e;
-            }
-        }
-        if (starting != null && ending != null && e == blocksA.length - 1) {
-            for (var i = starting; i < ending; i++) {
-                chunks.unshift(blocksA[i]);
-                blocksA[i].kill();
-            }
-            blocksA.splice(starting, (ending - starting));
+            chunks.unshift(blocksA[e]);
+            blocksA[e].kill();
+            blocksA.splice(e, 1);
+            e=0;
         }
     }
     starting = null, ending = null;
@@ -1323,7 +1373,7 @@ function update() {
                 e = 9;
                 player.handItem = e;
             }
-            HUD();
+            new HUD();
         }
     }
     //End of HUD update
@@ -1398,6 +1448,12 @@ function groundGen(e, i) {
                 blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
             }
         }
+        for (var j = 0; j < items.length; j++) {
+            if (items[j].Name == blocksA[blocksA.length - 1].key) {
+                blocksA[blocksA.length - 1].MineLevel  = items[j].MineLevel;
+                blocksA[blocksA.length - 1].Health = items[j].Health;
+            }
+        }
     } else if (blockKeyData.length > 0) {
         if(blockKeyData[0].X == 284){
             console.log("");
@@ -1411,9 +1467,12 @@ function groundGen(e, i) {
                 blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
                 blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
                 blockKeyData.splice(0, 1);
-                if(blockKeyData.length == 0){
-                    e = 3000;
-                    i = 4000;
+
+                for (var j = 0; j < items.length; j++) {
+                    if (items[j].Name == blocksA[blocksA.length - 1].key) {
+                        blocksA[blocksA.length - 1].MineLevel  = items[j].MineLevel;
+                        blocksA[blocksA.length - 1].Health = items[j].Health;
+                    }
                 }
             }
             else{
@@ -1424,9 +1483,12 @@ function groundGen(e, i) {
                 blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
                 blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
                 blockKeyData.splice(0, 1);
-                if(blockKeyData.length == 0){
-                    e = 3000;
-                    i = 4000;
+
+                for (var j = 0; j < items.length; j++) {
+                    if (items[j].Name == blocksA[blocksA.length - 1].key) {
+                        blocksA[blocksA.length - 1].MineLevel  = items[j].MineLevel;
+                        blocksA[blocksA.length - 1].Health = items[j].Health;
+                    }
                 }
             }
         } else {
@@ -1437,16 +1499,12 @@ function groundGen(e, i) {
             blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
             blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
             blockKeyData.splice(0, 1);
-            if(blockKeyData.length == 0){
-                e = 3000;
-                i = 4000;
+            for (var j = 0; j < items.length; j++) {
+                if (items[j].Name == blocksA[blocksA.length - 1].key) {
+                    blocksA[blocksA.length - 1].MineLevel  = items[j].MineLevel;
+                    blocksA[blocksA.length - 1].Health = items[j].Health;
+                }
             }
-        }
-    }
-    for (var j = 0; j < items.length; j++) {
-        if (items[j].Name == blocksA[blocksA.length - 1].key) {
-            blocksA[blocksA.length - 1].MineLevel = items[j].MineLevel;
-            blocksA[blocksA.length - 1].Health = items[j].Health;
         }
     }
 }
@@ -1456,6 +1514,9 @@ function groundGen(e, i) {
  * @constructor
  */
 function controlInventoryScreen() {
+    if(inventoryControls == null){
+        return;
+    }
     for (var e = 0; e < 9; e++) {
         inventory.items.crafting[e].kill();
     }
@@ -1468,13 +1529,13 @@ function controlInventoryScreen() {
         player.handItem--;
         inventory.currentRow = player.handItem;
         inventory.currentRowNumber = 0;
-        HUD();
+        new HUD();
     }
     if ((inventoryControls[2].isDown || inventoryControls[3].isDown) && player.handItem < 9) {
         player.handItem++;
         inventory.currentRow = player.handItem;
         inventory.currentRowNumber = 0;
-        HUD();
+        new HUD();
     }
     if ((inventoryControls[4].isDown || inventoryControls[5].isDown)) {
         for (var g = 0; g < inventory.items.length; g++) {
@@ -1600,9 +1661,9 @@ function ePressed() {
                 e = -1;
             }
         }
-        HUD();
+        new HUD();
     } else { //Inventory bar visible
-        upload();
+        //upload();
         for (var e = 0; e < inventoryTabButton.length; e++) {
             inventoryTabButton[e].sprite.visible = true;
             inventoryTabButton[e].tabSprite.visible = true;
@@ -1639,8 +1700,8 @@ function ePressed() {
                 e = -1;
             }
         }
-        HUD();
-        controlInventoryScreen();
+        new HUD();
+        new controlInventoryScreen();
     }
 }
 
@@ -1746,6 +1807,9 @@ function retrieve() {
   if (a.X == b.X) return a.Y - b.Y;
   return a.X - b.X;
             });
+            if(game == undefined){
+                startGame();
+            }
         }
     });
 }
