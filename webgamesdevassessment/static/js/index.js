@@ -84,6 +84,8 @@ var width = 0;
 var inventoryType;
 var startX;
 var startY;
+var save;
+var trash;
 
 function updateProgressBar() {
     game.canvas.id = 'game';
@@ -122,6 +124,8 @@ function preload() {
     game.load.image('bgBelow', 'Assets/GameImages/Background/bg_castle.png');
     game.load.image('inventoryBar', 'Assets/GameImages/HUD/inventoryBar.png');
     game.load.image('inventory', 'Assets/GameImages/HUD/inventoryScreen2.png');
+    game.load.image('save', 'Assets/GameImages/HUD/save.png');
+    game.load.image('trash', 'Assets/GameImages/HUD/trashcanOpen.png');
     game.load.image('inventoryBarHighlighter', 'Assets/GameImages/HUD/blue_panel.png');
     game.load.image('coal_ore', 'Assets/GameImages/Items/ore_coal.png');
     game.load.image('iron_ore', 'Assets/GameImages/Items/ore_ironAlt.png');
@@ -129,6 +133,7 @@ function preload() {
     game.load.image('diamond_ore', 'Assets/GameImages/Items/ore_diamond.png');
     game.load.image('silver_ore', 'Assets/GameImages/Items/ore_silver.png');
     game.load.image('tree', 'Assets/GameImages/Blocks/trunk_side.png');
+    game.load.image('wood', 'Assets/GameImages/Blocks/trunk_side.png');
     game.load.image('planks', 'Assets/GameImages/Blocks/wood.png');
     game.load.image('leaf', 'Assets/GameImages/Blocks/leaves_transparent.png');
     game.load.image('treeSeed', 'Assets/GameImages/Items/seed.png');
@@ -287,7 +292,7 @@ function create() {
     inventoryTabButton[1].tabSprite.events.onInputDown.add(changeTab, this);
 
     //X, Y, sprite_name, tab, row, rowNum, maxRow, craftingslots, - upto 9 different ingredients
-    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'planks', 0, 0, 0, 0, 0, "tree");
+    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'planks', 0, 0, 0, 0, 0, "wood", undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 4);
 
     new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'craftingTable', 0, 1, 0, 1, 2, "planks", "planks", undefined, "planks", "planks");
 
@@ -366,7 +371,7 @@ function create() {
  * @param {string} slotNine - This is the name of crafting ingredient nine
  * @constructor
  */
-function InvetoryItems(X, Y, name, Tab, Row, RowNum, MaxRow, craftingSlot, slotOne, slotTwo, slotThree, slotFour, slotFive, slotSix, slotSeven, slotEight, slotNine) {
+function InvetoryItems(X, Y, name, Tab, Row, RowNum, MaxRow, craftingSlot, slotOne, slotTwo, slotThree, slotFour, slotFive, slotSix, slotSeven, slotEight, slotNine, amountToCraft) {
     inventory.items.push({
         sprite: game.add.sprite(X, Y, name),
         Tab: Tab,
@@ -374,7 +379,8 @@ function InvetoryItems(X, Y, name, Tab, Row, RowNum, MaxRow, craftingSlot, slotO
         RowNumber: RowNum,
         maxRowNumber: MaxRow,
         craftingSlots: craftingSlot,
-        Requirements: new Array(9)
+        Requirements: new Array(9),
+        amountToCraft: amountToCraft
     });
     if (slotOne != undefined) {
         inventory.items[inventory.items.length - 1].Requirements[0] = slotOne;
@@ -462,6 +468,7 @@ function loadItems() {
     items.push(new ItemsData("gold_ore", 1, 3, 1, false, 1, null));
     items.push(new ItemsData("diamond_ore", 1, 3, 1, false, 1, null));
     items.push(new ItemsData("tree", 1, 3, 1, true, 1, null));
+    items.push(new ItemsData("wood", 1, 3, 1, true, 1, null));
     items.push(new ItemsData("planks", 1, 3, 1, true, 1, null));
     items.push(new ItemsData("leaf", 1, 3, 1, false, 1, null));
     items.push(new ItemsData("treeSeed", 1, 3, 1, true, 1, 15));
@@ -485,6 +492,8 @@ function loadItems() {
     items.push(new ItemsData("diamondAxe", 1, 3, 1, false, 6, null));
     items.push(new ItemsData("diamondSword", 1, 3, 1, false, 6, null));
     items.push(new ItemsData("diamondShovel", 1, 3, 1, false, 6, null));
+    items.push(new ItemsData("craftingTable", 1, 3, 1, true, 6, null));
+    items.push(new ItemsData("furnace", 1, 3, 1, true, 6, null));
 }
 
 /**
@@ -528,6 +537,9 @@ function mouseClicked() {
                                 blocksA[e].key = "treeSeed";
                                 blockDropped = "item";
                             }
+                        } else if(blocksA[e].key == "tree"){
+                            blocksA[e].key = "wood";
+                            blockDropped = "block";
                         } else {
                             blockDropped = "block";
                         }
@@ -955,9 +967,16 @@ function stopDrag(block) {
 function crafting(first) {
     var itemClickedRequirements = [];
     var craftingIngredients = [];
+    var amountToCraft;
     for(var w = 0; w < inventory.items.length; w++){
         if(first.key == inventory.items[w].sprite.key){
-            itemClickedRequirements = inventory.items[w].Requirements;
+            itemClickedRequirements = inventory.items[w].Requirements.slice(0, 9);
+            amountToCraft = inventory.items[w].amountToCraft;
+            if(itemClickedRequirements.length < 9){
+                for(var p = itemClickedRequirements.length; p < 9; p++){
+                    itemClickedRequirements.push(undefined)
+                }
+            }
             break;
         }
     }
@@ -992,8 +1011,27 @@ function crafting(first) {
                             for(var y = 0; y < craftingIngredients.length; y++){
                                 if(craftingIngredients[y] != undefined){
                                     player.inventory[craftingIngredients[y]].Amount--;
-                                    blocksAPickedUp[blocksAPickedUp.length] = blocksPickedUp.create(player.body.x, player.body.y, first.key);
-                                    blocksAPickedUp[blocksAPickedUp.length - 1].scale.setTo(.2, .2);
+                                    inventoryBarText[craftingIngredients[y]].text = player.inventory[craftingIngredients[y]].Amount;
+                                    if(player.inventory[craftingIngredients[y]].Amount <= 0){
+                                        inventoryBar.inventory[craftingIngredients[y]].kill();
+                                        player.inventory[craftingIngredients[y]] =({
+                                            Name: "Null",
+                                            MineLevel: 0,
+                                            Health: 0,
+                                            Amount: 0
+                                        });
+                                    }
+                                }
+                                if(y == craftingIngredients.length - 1){
+                                    if(amountToCraft != undefined){
+                                        for(var p = 0; p < amountToCraft; p++){
+                                            blocksAPickedUp[blocksAPickedUp.length] = blocksPickedUp.create(player.body.x, player.body.y, first.key);
+                                            blocksAPickedUp[blocksAPickedUp.length - 1].scale.setTo(.2, .2);
+                                        }
+                                    } else {
+                                        blocksAPickedUp[blocksAPickedUp.length] = blocksPickedUp.create(player.body.x, player.body.y, first.key);
+                                        blocksAPickedUp[blocksAPickedUp.length - 1].scale.setTo(.2, .2);
+                                    }
                                 }
                             }
                             console.log("Can craft");
@@ -1633,6 +1671,8 @@ function ePressed() {
 
     var loopCount = 0;
     if (inventoryBar.visible == false && updateInventory == false) { //Inventory bar not visible
+        save.kill();
+        trash.kill();
         for (var e = 0; e < inventory.items.length; e++) {
             for (var i = 0; i < inventory.items.length; i++) {
                 inventory.items[i].sprite.visible = false;
@@ -1652,18 +1692,24 @@ function ePressed() {
             inventoryTabButton[e].tabSprite.visible = false;
         }
         for (var e = 0; e < inventoryBar.inventory.length; e++) {
-            if (inventoryBar.inventory != undefined) {
+            if (inventoryBar.inventory[e] != undefined) {
                 inventoryBar.inventory[e].kill();
                 inventoryBar.inventory.splice(e, 1);
-                inventoryBarText[loopCount].text = "";
-                inventoryBarText[loopCount] = "Null";
-                loopCount++;
                 e = -1;
             }
+            inventoryBarText[loopCount].text = "";
+            inventoryBarText[loopCount] = "Null";
+            loopCount++;
         }
         new HUD();
     } else { //Inventory bar visible
-        //upload();
+        save = game.add.sprite(game.camera.x, game.camera.y, 'save');
+        save.inputEnabled = true;
+        save.events.onInputDown.add(upload, this);
+
+        trash = game.add.sprite(game.camera.x + save.width, game.camera.y, 'trash');
+        trash.inputEnabled = true;
+        trash.events.onInputDown.add(clearLevel, this);
         for (var e = 0; e < inventoryTabButton.length; e++) {
             inventoryTabButton[e].sprite.visible = true;
             inventoryTabButton[e].tabSprite.visible = true;
@@ -1690,22 +1736,26 @@ function ePressed() {
         inventoryControls[7].onDown.add(controlInventoryScreen, this);
         inventoryType = 3;
         inventory.visible = true;
+        reDrawBar = true;
         for (var e = 0; e < inventoryBar.inventory.length; e++) {
-            if (inventoryBar.inventory != undefined) {
+            if (inventoryBar.inventory[e] != undefined) {
                 inventoryBar.inventory[e].kill();
                 inventoryBar.inventory.splice(e, 1);
-                inventoryBarText[loopCount].text = "";
-                inventoryBarText[loopCount] = "Null";
-                loopCount++;
                 e = -1;
             }
+            inventoryBarText[loopCount].text = "";
+            inventoryBarText[loopCount] = "Null";
+            loopCount++;
         }
         new HUD();
         new controlInventoryScreen();
     }
 }
 
-//Server tests
+function clearLevel(){
+    $.get("/delete?username=" + username + "&del=" + true);
+}
+
 //This function sends data to the server
 function upload() {
     var dataLength = 0;
