@@ -1,10 +1,15 @@
+/**
+ * This is used to hdie the progress bar
+ * @constructor
+ */
 window.onload = function () {
     $("#myProgress").hide();
-    $("#Username").val("g");
-    $("#Password").val("g");
 }
 var username;
-
+/**
+ * This is where the player attempts to log-in
+ * @constructor
+ */
 function logIn() {
     username = $("#Username").val();
     var password = $("#Password").val();
@@ -28,6 +33,10 @@ function logIn() {
     });
 }
 
+/**
+ * This is where the player creates a new account
+ * @constructor
+ */
 function createAccount() {
     username = $("#Username").val();
     var password = $("#Password").val();
@@ -86,7 +95,12 @@ var startX;
 var startY;
 var save;
 var trash;
-
+var lastTree = 0;
+var toolTip;
+/**
+ * This is the loading bar that shows when the player has logged in
+ * @constructor
+ */
 function updateProgressBar() {
     game.canvas.id = 'game';
     //console.log(game.load.progress);
@@ -105,7 +119,10 @@ function updateProgressBar() {
         $("#myBar").height = 0;
     }
 }
-
+/**
+ * This is where all the assets the game uses are loaded
+ * @constructor
+ */
 function preload() {
     game.load.onFileComplete.add(updateProgressBar, this);
     game.load.image('player', 'Assets/GameImages/Player/p1_front.png');
@@ -160,8 +177,20 @@ function preload() {
     game.load.image('craftingTable', 'Assets/GameImages/Blocks/table.png');
     game.load.image('furnace', 'Assets/GameImages/Blocks/oven.png');
 }
-
+/**
+ * This is where the variable that the game needs to run are filled
+ * @constructor
+ */
 function create() {
+    var style = {
+        font: "16px Arial",
+        fill: "#000000",
+        wordWrap: false,
+        wordWrapWidth: 200,
+        align: "center"
+    };
+    toolTip = game.add.text(0, 0, "", style);
+
     game.stage.backgroundColor = '#ffffff'
     game.canvas.oncontextmenu = function (e) {
         e.preventDefault();
@@ -416,6 +445,7 @@ function InvetoryItems(X, Y, name, Tab, Row, RowNum, MaxRow, craftingSlot, slotO
 /**
  * This function simply changes the tab that is shown for crafting
  * @param {sprite} data - This hold the data for tab that has been clicked on
+ * @constructor
  */
 function changeTab(data) {
     inventory.currentTab = data.tabNum;
@@ -890,12 +920,20 @@ function HUD() {
     }
     reDrawBar = false;
 }
-
+/***
+ *
+ * @param {sprite} block - This is the block the player is dragging
+ * @constructor
+ */
 function startDrag(block) {
     startX = block.x;
     startY = block.y;
 }
-
+/***
+ *
+ * @param {sprite} block - This is the block the player is dragging
+ * @constructor
+ */
 function stopDrag(block) {
     var loopCount = 0;
     for (var e = 0; e < inventoryBar.inventory.length; e++) {
@@ -961,7 +999,8 @@ function stopDrag(block) {
 }
 
 /**
- *
+ * This is where the crafting is handled
+ * @param {sprite} first - This is the block the player has clicked on
  * @constructor
  */
 function crafting(first) {
@@ -1023,15 +1062,9 @@ function crafting(first) {
                                     }
                                 }
                                 if(y == craftingIngredients.length - 1){
-                                    if(amountToCraft != undefined){
-                                        for(var p = 0; p < amountToCraft; p++){
                                             blocksAPickedUp[blocksAPickedUp.length] = blocksPickedUp.create(player.body.x, player.body.y, first.key);
+                                            blocksAPickedUp[blocksAPickedUp.length - 1].amountToCraft = amountToCraft;
                                             blocksAPickedUp[blocksAPickedUp.length - 1].scale.setTo(.2, .2);
-                                        }
-                                    } else {
-                                        blocksAPickedUp[blocksAPickedUp.length] = blocksPickedUp.create(player.body.x, player.body.y, first.key);
-                                        blocksAPickedUp[blocksAPickedUp.length - 1].scale.setTo(.2, .2);
-                                    }
                                 }
                             }
                             console.log("Can craft");
@@ -1059,7 +1092,12 @@ function pickUpItems(first, second) {
     }
     for (var o = 0; o < player.inventory.length; o++) { //Loops through player inventory to check if item already there
         if (player.inventory[o].Name == items[item].Name) { //If item is already there
-            player.inventory[o].Amount++; //Add one to item if in inventory
+            if(second.amountToCraft != undefined) {
+                player.inventory[o].Amount += second.amountToCraft; //Add one to item if in inventory
+            }
+            else{
+                player.inventory[o].Amount++;
+            }
             second.kill(); //This kills the dropped block
             break; //Breaks the loop
         } else if (o == player.inventory.length - 1) { //If item is not there
@@ -1070,7 +1108,12 @@ function pickUpItems(first, second) {
                     player.inventory[e].Strength = items[item].Strength; //Makes the inventory slot equal to the item found
                     player.inventory[e].Placeable = items[item].Placeable;
                     if (player.inventory[e].Amount == 0) {
-                        player.inventory[e].Amount++;
+                        if(second.amountToCraft != undefined) {
+                            player.inventory[e].Amount += second.amountToCraft; //Add one to item if in inventory
+                        }
+                        else{
+                            player.inventory[e].Amount++;
+                        }
                     }
                     second.kill(); //This kills the dropped block
                     new HUD(); //Updates the HUD
@@ -1095,6 +1138,33 @@ function update() {
             inventoryBarText[e] = "Null";
         }
     }
+
+    if(save != undefined && save.alive != false && save.input.pointerOver()){
+            toolTip.x = save.x;
+            toolTip.y = save.y + 50;
+            toolTip.text = "Save current level";
+            game.world.bringToTop(toolTip);
+    }
+    else if(trash != undefined && trash.alive != false && trash.input.pointerOver()){
+            toolTip.x = trash.x;
+            toolTip.y = trash.y + 50;
+            toolTip.text = "Delete current save";
+            game.world.bringToTop(toolTip);
+    }
+    else{
+        toolTip.x = -200;
+        toolTip.y = -200;
+        toolTip.text = "";
+    }
+    for(var l = 0; l < inventory.items.length; l ++) {
+        if(inventory.items[l].sprite.input.pointerOver()){
+            toolTip.x = inventory.items[l].sprite.x;
+            toolTip.y = inventory.items[l].sprite.y + 65;
+            toolTip.text = inventory.items[l].sprite.key;
+            game.world.bringToTop(toolTip);
+        }
+    }
+
     //End of text update
     //Start of background change
     if (game.camera.y > 500) {
@@ -1154,15 +1224,16 @@ function update() {
         } else {
             var lastX = -70; //This is used if there is no blocks on screen
         }
-        var lastTree = 0
+
         for (var e = lastX + 70; e < lastX + 2000; e += 70) { //Changes the X value for the loop
             var treeChance = Math.floor(Math.random() * (10 - 1) + 1);
             var tree = false;
             var treeHeight = Math.floor(Math.random() * (6 - 3) + 3);
-            if (treeChance == 1 && e > (lastTree + 700)) {
+            if (treeChance == 1 && e > (lastTree + 420)) {
                 if (blockKeyData.length == 0) {
                     tree = true;
                     lastTree = e;
+                    console.log(lastTree);
                 }
             }
             for (var i = 490; i <= 4000; i += 70) { //Changes the Y value for the loop
@@ -1417,7 +1488,12 @@ function update() {
     //End of HUD update
 }
 
-
+/***
+ * This is where the ground that the player can move on/mine is handled
+ * @param {int} e - This is the X co-ordinate of the block
+ * @param {int} i - This is the Y co-ordinate of the block
+ * @constructor
+ */
 function groundGen(e, i) {
     if (blockKeyData.length == 0) {
         var randomBlock = Math.floor(Math.random() * (8 - 1) + 1);
@@ -1697,8 +1773,10 @@ function ePressed() {
                 inventoryBar.inventory.splice(e, 1);
                 e = -1;
             }
-            inventoryBarText[loopCount].text = "";
-            inventoryBarText[loopCount] = "Null";
+            if (inventoryBarText[loopCount] != null) {
+                inventoryBarText[loopCount].text = "";
+                inventoryBarText[loopCount] = "Null";
+            }
             loopCount++;
         }
         new HUD();
@@ -1743,8 +1821,10 @@ function ePressed() {
                 inventoryBar.inventory.splice(e, 1);
                 e = -1;
             }
-            inventoryBarText[loopCount].text = "";
-            inventoryBarText[loopCount] = "Null";
+            if (inventoryBarText[loopCount] != null) {
+                inventoryBarText[loopCount].text = "";
+                inventoryBarText[loopCount] = "Null";
+            }
             loopCount++;
         }
         new HUD();
@@ -1752,11 +1832,18 @@ function ePressed() {
     }
 }
 
+/***
+ * This delete the current save of the player
+ * @constructor
+ */
 function clearLevel(){
     $.get("/delete?username=" + username + "&del=" + true);
 }
 
-//This function sends data to the server
+/***
+ * This is where the saving of the level is handled
+ * @constructor
+ */
 function upload() {
     var dataLength = 0;
     var storeData = [];
@@ -1812,7 +1899,11 @@ function upload() {
         }
     }
 }
-//This function retrieves data from server
+
+/***
+ * THis is where the loading of the level is handled
+ * @constructor
+ */
 function retrieve() {
     blockKeyData = [];
     $.ajax({
@@ -1829,12 +1920,7 @@ function retrieve() {
             var name;
             var x;
             var y;
-            for (var e = 0; e < response.Data.length; e++) {
-                response.Data[e].Blocks = response.Data[e].Blocks;
-                response.Data[e].X = response.Data[e].X;
-                response.Data[e].Y = response.Data[e].Y;
 
-            }
             for (var i = 0; i < response.Data.length; i++) {
                 name = response.Data[i].Blocks.split(",");
                 name.splice(0, 1);
