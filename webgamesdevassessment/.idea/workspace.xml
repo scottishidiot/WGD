@@ -34,19 +34,17 @@
       <file leaf-file-name="index.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/js/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.6759099">
-              <caret line="1901" column="0" selection-start-line="1901" selection-start-column="0" selection-end-line="1901" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.71403813">
+              <caret line="2117" column="0" selection-start-line="2117" selection-start-column="0" selection-end-line="2117" selection-end-column="0" />
               <folding>
+                <element signature="e#206#238#0" expanded="false" />
+                <element signature="n#!!block;n#logIn#0" expanded="false" />
                 <element signature="n#!!block;n#createAccount#0" expanded="false" />
                 <element signature="n#!!block;n#startGame#0" expanded="false" />
                 <element signature="n#!!block;n#updateProgressBar#0" expanded="false" />
-                <element signature="n#!!block;n#preload#0" expanded="false" />
                 <element signature="n#!!block;n#create#0" expanded="false" />
-                <element signature="n#!!block;n#InvetoryItems#0" expanded="false" />
+                <element signature="n#!!block;n#InventoryItems#0" expanded="false" />
                 <element signature="n#!!block;n#changeTab#0" expanded="false" />
-                <element signature="n#!!block;n#ItemsData#0" expanded="false" />
-                <element signature="n#!!block;n#loadItems#0" expanded="false" />
-                <element signature="n#!!block;n#mouseClicked#0" expanded="false" />
                 <element signature="n#!!block;n#HUD#0" expanded="false" />
                 <element signature="n#!!block;n#startDrag#0" expanded="false" />
                 <element signature="n#!!block;n#stopDrag#0" expanded="false" />
@@ -55,6 +53,7 @@
                 <element signature="n#!!block;n#update#0" expanded="false" />
                 <element signature="n#!!block;n#groundGen#0" expanded="false" />
                 <element signature="n#!!block;n#controlInventoryScreen#0" expanded="false" />
+                <element signature="n#!!block;n#openFurnace#0" expanded="false" />
                 <element signature="n#!!block;n#ePressed#0" expanded="false" />
                 <element signature="n#!!block;n#clearLevel#0" expanded="false" />
                 <element signature="n#!!block;n#upload#0" expanded="false" />
@@ -64,11 +63,22 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/main.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="144" column="22" selection-start-line="144" selection-start-column="22" selection-end-line="144" selection-end-column="22" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
     </leaf>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
+        <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/static/js/index.js" />
       </list>
     </option>
@@ -109,6 +119,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -129,12 +140,11 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -218,12 +228,12 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1376" height="744" extended-state="6" />
-    <editor active="false" />
+    <frame x="-8" y="-8" width="1376" height="744" extended-state="7" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17867647" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.329653" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -253,7 +263,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <option name="time" value="18" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -271,16 +281,14 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
+            <element signature="e#206#238#0" expanded="false" />
+            <element signature="n#!!block;n#logIn#0" expanded="false" />
             <element signature="n#!!block;n#createAccount#0" expanded="false" />
             <element signature="n#!!block;n#startGame#0" expanded="false" />
             <element signature="n#!!block;n#updateProgressBar#0" expanded="false" />
-            <element signature="n#!!block;n#preload#0" expanded="false" />
             <element signature="n#!!block;n#create#0" expanded="false" />
-            <element signature="n#!!block;n#InvetoryItems#0" expanded="false" />
+            <element signature="n#!!block;n#InventoryItems#0" expanded="false" />
             <element signature="n#!!block;n#changeTab#0" expanded="false" />
-            <element signature="n#!!block;n#ItemsData#0" expanded="false" />
-            <element signature="n#!!block;n#loadItems#0" expanded="false" />
-            <element signature="n#!!block;n#mouseClicked#0" expanded="false" />
             <element signature="n#!!block;n#HUD#0" expanded="false" />
             <element signature="n#!!block;n#startDrag#0" expanded="false" />
             <element signature="n#!!block;n#stopDrag#0" expanded="false" />
@@ -289,6 +297,191 @@
             <element signature="n#!!block;n#update#0" expanded="false" />
             <element signature="n#!!block;n#groundGen#0" expanded="false" />
             <element signature="n#!!block;n#controlInventoryScreen#0" expanded="false" />
+            <element signature="n#!!block;n#openFurnace#0" expanded="false" />
+            <element signature="n#!!block;n#ePressed#0" expanded="false" />
+            <element signature="n#!!block;n#clearLevel#0" expanded="false" />
+            <element signature="n#!!block;n#upload#0" expanded="false" />
+            <element signature="n#!!block;n#retrieve#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="144" column="22" selection-start-line="144" selection-start-column="22" selection-end-line="144" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#206#238#0" expanded="false" />
+            <element signature="n#!!block;n#logIn#0" expanded="false" />
+            <element signature="n#!!block;n#createAccount#0" expanded="false" />
+            <element signature="n#!!block;n#startGame#0" expanded="false" />
+            <element signature="n#!!block;n#updateProgressBar#0" expanded="false" />
+            <element signature="n#!!block;n#create#0" expanded="false" />
+            <element signature="n#!!block;n#InventoryItems#0" expanded="false" />
+            <element signature="n#!!block;n#changeTab#0" expanded="false" />
+            <element signature="n#!!block;n#HUD#0" expanded="false" />
+            <element signature="n#!!block;n#startDrag#0" expanded="false" />
+            <element signature="n#!!block;n#stopDrag#0" expanded="false" />
+            <element signature="n#!!block;n#crafting#0" expanded="false" />
+            <element signature="n#!!block;n#pickUpItems#0" expanded="false" />
+            <element signature="n#!!block;n#update#0" expanded="false" />
+            <element signature="n#!!block;n#groundGen#0" expanded="false" />
+            <element signature="n#!!block;n#controlInventoryScreen#0" expanded="false" />
+            <element signature="n#!!block;n#openFurnace#0" expanded="false" />
+            <element signature="n#!!block;n#ePressed#0" expanded="false" />
+            <element signature="n#!!block;n#clearLevel#0" expanded="false" />
+            <element signature="n#!!block;n#upload#0" expanded="false" />
+            <element signature="n#!!block;n#retrieve#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="144" column="22" selection-start-line="144" selection-start-column="22" selection-end-line="144" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#206#238#0" expanded="false" />
+            <element signature="n#!!block;n#logIn#0" expanded="false" />
+            <element signature="n#!!block;n#createAccount#0" expanded="false" />
+            <element signature="n#!!block;n#startGame#0" expanded="false" />
+            <element signature="n#!!block;n#updateProgressBar#0" expanded="false" />
+            <element signature="n#!!block;n#create#0" expanded="false" />
+            <element signature="n#!!block;n#InventoryItems#0" expanded="false" />
+            <element signature="n#!!block;n#changeTab#0" expanded="false" />
+            <element signature="n#!!block;n#HUD#0" expanded="false" />
+            <element signature="n#!!block;n#startDrag#0" expanded="false" />
+            <element signature="n#!!block;n#stopDrag#0" expanded="false" />
+            <element signature="n#!!block;n#crafting#0" expanded="false" />
+            <element signature="n#!!block;n#pickUpItems#0" expanded="false" />
+            <element signature="n#!!block;n#update#0" expanded="false" />
+            <element signature="n#!!block;n#groundGen#0" expanded="false" />
+            <element signature="n#!!block;n#controlInventoryScreen#0" expanded="false" />
+            <element signature="n#!!block;n#openFurnace#0" expanded="false" />
+            <element signature="n#!!block;n#ePressed#0" expanded="false" />
+            <element signature="n#!!block;n#clearLevel#0" expanded="false" />
+            <element signature="n#!!block;n#upload#0" expanded="false" />
+            <element signature="n#!!block;n#retrieve#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="125" column="22" selection-start-line="125" selection-start-column="22" selection-end-line="125" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#206#238#0" expanded="false" />
+            <element signature="n#!!block;n#logIn#0" expanded="false" />
+            <element signature="n#!!block;n#createAccount#0" expanded="false" />
+            <element signature="n#!!block;n#startGame#0" expanded="false" />
+            <element signature="n#!!block;n#updateProgressBar#0" expanded="false" />
+            <element signature="n#!!block;n#create#0" expanded="false" />
+            <element signature="n#!!block;n#InventoryItems#0" expanded="false" />
+            <element signature="n#!!block;n#changeTab#0" expanded="false" />
+            <element signature="n#!!block;n#HUD#0" expanded="false" />
+            <element signature="n#!!block;n#startDrag#0" expanded="false" />
+            <element signature="n#!!block;n#stopDrag#0" expanded="false" />
+            <element signature="n#!!block;n#crafting#0" expanded="false" />
+            <element signature="n#!!block;n#pickUpItems#0" expanded="false" />
+            <element signature="n#!!block;n#update#0" expanded="false" />
+            <element signature="n#!!block;n#groundGen#0" expanded="false" />
+            <element signature="n#!!block;n#controlInventoryScreen#0" expanded="false" />
+            <element signature="n#!!block;n#openFurnace#0" expanded="false" />
+            <element signature="n#!!block;n#ePressed#0" expanded="false" />
+            <element signature="n#!!block;n#clearLevel#0" expanded="false" />
+            <element signature="n#!!block;n#upload#0" expanded="false" />
+            <element signature="n#!!block;n#retrieve#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="85" column="19" selection-start-line="85" selection-start-column="19" selection-end-line="85" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#206#238#0" expanded="false" />
+            <element signature="n#!!block;n#logIn#0" expanded="false" />
+            <element signature="n#!!block;n#createAccount#0" expanded="false" />
+            <element signature="n#!!block;n#startGame#0" expanded="false" />
+            <element signature="n#!!block;n#updateProgressBar#0" expanded="false" />
+            <element signature="n#!!block;n#create#0" expanded="false" />
+            <element signature="n#!!block;n#InventoryItems#0" expanded="false" />
+            <element signature="n#!!block;n#changeTab#0" expanded="false" />
+            <element signature="n#!!block;n#HUD#0" expanded="false" />
+            <element signature="n#!!block;n#startDrag#0" expanded="false" />
+            <element signature="n#!!block;n#stopDrag#0" expanded="false" />
+            <element signature="n#!!block;n#crafting#0" expanded="false" />
+            <element signature="n#!!block;n#pickUpItems#0" expanded="false" />
+            <element signature="n#!!block;n#update#0" expanded="false" />
+            <element signature="n#!!block;n#groundGen#0" expanded="false" />
+            <element signature="n#!!block;n#controlInventoryScreen#0" expanded="false" />
+            <element signature="n#!!block;n#openFurnace#0" expanded="false" />
             <element signature="n#!!block;n#ePressed#0" expanded="false" />
             <element signature="n#!!block;n#clearLevel#0" expanded="false" />
             <element signature="n#!!block;n#upload#0" expanded="false" />
@@ -310,16 +503,14 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
+            <element signature="e#206#238#0" expanded="false" />
+            <element signature="n#!!block;n#logIn#0" expanded="false" />
             <element signature="n#!!block;n#createAccount#0" expanded="false" />
             <element signature="n#!!block;n#startGame#0" expanded="false" />
             <element signature="n#!!block;n#updateProgressBar#0" expanded="false" />
-            <element signature="n#!!block;n#preload#0" expanded="false" />
             <element signature="n#!!block;n#create#0" expanded="false" />
-            <element signature="n#!!block;n#InvetoryItems#0" expanded="false" />
+            <element signature="n#!!block;n#InventoryItems#0" expanded="false" />
             <element signature="n#!!block;n#changeTab#0" expanded="false" />
-            <element signature="n#!!block;n#ItemsData#0" expanded="false" />
-            <element signature="n#!!block;n#loadItems#0" expanded="false" />
-            <element signature="n#!!block;n#mouseClicked#0" expanded="false" />
             <element signature="n#!!block;n#HUD#0" expanded="false" />
             <element signature="n#!!block;n#startDrag#0" expanded="false" />
             <element signature="n#!!block;n#stopDrag#0" expanded="false" />
@@ -328,6 +519,7 @@
             <element signature="n#!!block;n#update#0" expanded="false" />
             <element signature="n#!!block;n#groundGen#0" expanded="false" />
             <element signature="n#!!block;n#controlInventoryScreen#0" expanded="false" />
+            <element signature="n#!!block;n#openFurnace#0" expanded="false" />
             <element signature="n#!!block;n#ePressed#0" expanded="false" />
             <element signature="n#!!block;n#clearLevel#0" expanded="false" />
             <element signature="n#!!block;n#upload#0" expanded="false" />
@@ -346,19 +538,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/js/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6759099">
-          <caret line="1901" column="0" selection-start-line="1901" selection-start-column="0" selection-end-line="1901" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
+            <element signature="e#206#238#0" expanded="false" />
+            <element signature="n#!!block;n#logIn#0" expanded="false" />
             <element signature="n#!!block;n#createAccount#0" expanded="false" />
             <element signature="n#!!block;n#startGame#0" expanded="false" />
             <element signature="n#!!block;n#updateProgressBar#0" expanded="false" />
-            <element signature="n#!!block;n#preload#0" expanded="false" />
             <element signature="n#!!block;n#create#0" expanded="false" />
-            <element signature="n#!!block;n#InvetoryItems#0" expanded="false" />
+            <element signature="n#!!block;n#InventoryItems#0" expanded="false" />
             <element signature="n#!!block;n#changeTab#0" expanded="false" />
-            <element signature="n#!!block;n#ItemsData#0" expanded="false" />
-            <element signature="n#!!block;n#loadItems#0" expanded="false" />
-            <element signature="n#!!block;n#mouseClicked#0" expanded="false" />
             <element signature="n#!!block;n#HUD#0" expanded="false" />
             <element signature="n#!!block;n#startDrag#0" expanded="false" />
             <element signature="n#!!block;n#stopDrag#0" expanded="false" />
@@ -367,6 +557,167 @@
             <element signature="n#!!block;n#update#0" expanded="false" />
             <element signature="n#!!block;n#groundGen#0" expanded="false" />
             <element signature="n#!!block;n#controlInventoryScreen#0" expanded="false" />
+            <element signature="n#!!block;n#openFurnace#0" expanded="false" />
+            <element signature="n#!!block;n#ePressed#0" expanded="false" />
+            <element signature="n#!!block;n#clearLevel#0" expanded="false" />
+            <element signature="n#!!block;n#upload#0" expanded="false" />
+            <element signature="n#!!block;n#retrieve#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#206#238#0" expanded="false" />
+            <element signature="n#!!block;n#logIn#0" expanded="false" />
+            <element signature="n#!!block;n#createAccount#0" expanded="false" />
+            <element signature="n#!!block;n#startGame#0" expanded="false" />
+            <element signature="n#!!block;n#updateProgressBar#0" expanded="false" />
+            <element signature="n#!!block;n#create#0" expanded="false" />
+            <element signature="n#!!block;n#InventoryItems#0" expanded="false" />
+            <element signature="n#!!block;n#changeTab#0" expanded="false" />
+            <element signature="n#!!block;n#HUD#0" expanded="false" />
+            <element signature="n#!!block;n#startDrag#0" expanded="false" />
+            <element signature="n#!!block;n#stopDrag#0" expanded="false" />
+            <element signature="n#!!block;n#crafting#0" expanded="false" />
+            <element signature="n#!!block;n#pickUpItems#0" expanded="false" />
+            <element signature="n#!!block;n#update#0" expanded="false" />
+            <element signature="n#!!block;n#groundGen#0" expanded="false" />
+            <element signature="n#!!block;n#controlInventoryScreen#0" expanded="false" />
+            <element signature="n#!!block;n#openFurnace#0" expanded="false" />
+            <element signature="n#!!block;n#ePressed#0" expanded="false" />
+            <element signature="n#!!block;n#clearLevel#0" expanded="false" />
+            <element signature="n#!!block;n#upload#0" expanded="false" />
+            <element signature="n#!!block;n#retrieve#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#206#238#0" expanded="false" />
+            <element signature="n#!!block;n#logIn#0" expanded="false" />
+            <element signature="n#!!block;n#createAccount#0" expanded="false" />
+            <element signature="n#!!block;n#startGame#0" expanded="false" />
+            <element signature="n#!!block;n#updateProgressBar#0" expanded="false" />
+            <element signature="n#!!block;n#create#0" expanded="false" />
+            <element signature="n#!!block;n#InventoryItems#0" expanded="false" />
+            <element signature="n#!!block;n#changeTab#0" expanded="false" />
+            <element signature="n#!!block;n#HUD#0" expanded="false" />
+            <element signature="n#!!block;n#startDrag#0" expanded="false" />
+            <element signature="n#!!block;n#stopDrag#0" expanded="false" />
+            <element signature="n#!!block;n#crafting#0" expanded="false" />
+            <element signature="n#!!block;n#pickUpItems#0" expanded="false" />
+            <element signature="n#!!block;n#update#0" expanded="false" />
+            <element signature="n#!!block;n#groundGen#0" expanded="false" />
+            <element signature="n#!!block;n#controlInventoryScreen#0" expanded="false" />
+            <element signature="n#!!block;n#openFurnace#0" expanded="false" />
+            <element signature="n#!!block;n#ePressed#0" expanded="false" />
+            <element signature="n#!!block;n#clearLevel#0" expanded="false" />
+            <element signature="n#!!block;n#upload#0" expanded="false" />
+            <element signature="n#!!block;n#retrieve#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#206#238#0" expanded="false" />
+            <element signature="n#!!block;n#logIn#0" expanded="false" />
+            <element signature="n#!!block;n#createAccount#0" expanded="false" />
+            <element signature="n#!!block;n#startGame#0" expanded="false" />
+            <element signature="n#!!block;n#updateProgressBar#0" expanded="false" />
+            <element signature="n#!!block;n#create#0" expanded="false" />
+            <element signature="n#!!block;n#InventoryItems#0" expanded="false" />
+            <element signature="n#!!block;n#changeTab#0" expanded="false" />
+            <element signature="n#!!block;n#HUD#0" expanded="false" />
+            <element signature="n#!!block;n#startDrag#0" expanded="false" />
+            <element signature="n#!!block;n#stopDrag#0" expanded="false" />
+            <element signature="n#!!block;n#crafting#0" expanded="false" />
+            <element signature="n#!!block;n#pickUpItems#0" expanded="false" />
+            <element signature="n#!!block;n#update#0" expanded="false" />
+            <element signature="n#!!block;n#groundGen#0" expanded="false" />
+            <element signature="n#!!block;n#controlInventoryScreen#0" expanded="false" />
+            <element signature="n#!!block;n#openFurnace#0" expanded="false" />
+            <element signature="n#!!block;n#ePressed#0" expanded="false" />
+            <element signature="n#!!block;n#clearLevel#0" expanded="false" />
+            <element signature="n#!!block;n#upload#0" expanded="false" />
+            <element signature="n#!!block;n#retrieve#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="144" column="22" selection-start-line="144" selection-start-column="22" selection-end-line="144" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.71403813">
+          <caret line="2117" column="0" selection-start-line="2117" selection-start-column="0" selection-end-line="2117" selection-end-column="0" />
+          <folding>
+            <element signature="e#206#238#0" expanded="false" />
+            <element signature="n#!!block;n#logIn#0" expanded="false" />
+            <element signature="n#!!block;n#createAccount#0" expanded="false" />
+            <element signature="n#!!block;n#startGame#0" expanded="false" />
+            <element signature="n#!!block;n#updateProgressBar#0" expanded="false" />
+            <element signature="n#!!block;n#create#0" expanded="false" />
+            <element signature="n#!!block;n#InventoryItems#0" expanded="false" />
+            <element signature="n#!!block;n#changeTab#0" expanded="false" />
+            <element signature="n#!!block;n#HUD#0" expanded="false" />
+            <element signature="n#!!block;n#startDrag#0" expanded="false" />
+            <element signature="n#!!block;n#stopDrag#0" expanded="false" />
+            <element signature="n#!!block;n#crafting#0" expanded="false" />
+            <element signature="n#!!block;n#pickUpItems#0" expanded="false" />
+            <element signature="n#!!block;n#update#0" expanded="false" />
+            <element signature="n#!!block;n#groundGen#0" expanded="false" />
+            <element signature="n#!!block;n#controlInventoryScreen#0" expanded="false" />
+            <element signature="n#!!block;n#openFurnace#0" expanded="false" />
             <element signature="n#!!block;n#ePressed#0" expanded="false" />
             <element signature="n#!!block;n#clearLevel#0" expanded="false" />
             <element signature="n#!!block;n#upload#0" expanded="false" />

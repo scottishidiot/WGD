@@ -1,3 +1,5 @@
+// TODO - Clear inventory bar selector on furnace, make furnace useable, player spawn point, player server save
+
 /**
  * This is used to hdie the progress bar
  * @constructor
@@ -97,6 +99,10 @@ var save;
 var trash;
 var lastTree = 0;
 var toolTip;
+var blockClicked = undefined;
+var blockClickedNum = undefined;
+var furnace;
+var load = false;
 /**
  * This is the loading bar that shows when the player has logged in
  * @constructor
@@ -140,7 +146,8 @@ function preload() {
     game.load.image('bgAbove', 'Assets/GameImages/Background/bg.png');
     game.load.image('bgBelow', 'Assets/GameImages/Background/bg_castle.png');
     game.load.image('inventoryBar', 'Assets/GameImages/HUD/inventoryBar.png');
-    game.load.image('inventory', 'Assets/GameImages/HUD/inventoryScreen2.png');
+    game.load.image('inventory', 'Assets/GameImages/HUD/inventoryScreen.png');
+    game.load.image('furnaceInterface', 'Assets/GameImages/HUD/furnace.png');
     game.load.image('save', 'Assets/GameImages/HUD/save.png');
     game.load.image('trash', 'Assets/GameImages/HUD/trashcanOpen.png');
     game.load.image('inventoryBarHighlighter', 'Assets/GameImages/HUD/blue_panel.png');
@@ -151,31 +158,31 @@ function preload() {
     game.load.image('silver_ore', 'Assets/GameImages/Items/ore_silver.png');
     game.load.image('tree', 'Assets/GameImages/Blocks/trunk_side.png');
     game.load.image('wood', 'Assets/GameImages/Blocks/trunk_side.png');
-    game.load.image('planks', 'Assets/GameImages/Blocks/wood.png');
+    game.load.image('Planks', 'Assets/GameImages/Blocks/wood.png');
     game.load.image('leaf', 'Assets/GameImages/Blocks/leaves_transparent.png');
     game.load.image('treeSeed', 'Assets/GameImages/Items/seed.png');
-    game.load.image('woodPick', 'Assets/GameImages/Items/pick_bronze.png');
-    game.load.image('woodAxe', 'Assets/GameImages/Items/axe_bronze.png');
-    game.load.image('woodSword', 'Assets/GameImages/Items/sword_bronze.png');
-    game.load.image('woodShovel', 'Assets/GameImages/Items/shovel_bronze.png');
-    game.load.image('ironPick', 'Assets/GameImages/Items/pick_iron.png');
-    game.load.image('ironAxe', 'Assets/GameImages/Items/axe_iron.png');
-    game.load.image('ironSword', 'Assets/GameImages/Items/sword_iron.png');
-    game.load.image('ironShovel', 'Assets/GameImages/Items/shovel_iron.png');
-    game.load.image('silverPick', 'Assets/GameImages/Items/pick_silver.png');
-    game.load.image('silverAxe', 'Assets/GameImages/Items/axe_silver.png');
-    game.load.image('silverSword', 'Assets/GameImages/Items/sword_silver.png');
-    game.load.image('silverShovel', 'Assets/GameImages/Items/shovel_silver.png');
-    game.load.image('goldPick', 'Assets/GameImages/Items/pick_gold.png');
-    game.load.image('goldAxe', 'Assets/GameImages/Items/axe_gold.png');
-    game.load.image('goldSword', 'Assets/GameImages/Items/sword_gold.png');
-    game.load.image('goldShovel', 'Assets/GameImages/Items/shovel_gold.png');
-    game.load.image('diamondPick', 'Assets/GameImages/Items/pick_diamond.png');
-    game.load.image('diamondAxe', 'Assets/GameImages/Items/axe_diamond.png');
-    game.load.image('diamondSword', 'Assets/GameImages/Items/sword_diamond.png');
-    game.load.image('diamondShovel', 'Assets/GameImages/Items/shovel_diamond.png');
-    game.load.image('craftingTable', 'Assets/GameImages/Blocks/table.png');
-    game.load.image('furnace', 'Assets/GameImages/Blocks/oven.png');
+    game.load.image('Wood Pick', 'Assets/GameImages/Items/pick_bronze.png');
+    game.load.image('Wood Axe', 'Assets/GameImages/Items/axe_bronze.png');
+    game.load.image('Wood Sword', 'Assets/GameImages/Items/sword_bronze.png');
+    game.load.image('Wood Shovel', 'Assets/GameImages/Items/shovel_bronze.png');
+    game.load.image('Iron Pick', 'Assets/GameImages/Items/pick_iron.png');
+    game.load.image('Iron Axe', 'Assets/GameImages/Items/axe_iron.png');
+    game.load.image('Iron Sword', 'Assets/GameImages/Items/sword_iron.png');
+    game.load.image('Iron Shovel', 'Assets/GameImages/Items/shovel_iron.png');
+    game.load.image('Silver Pick', 'Assets/GameImages/Items/pick_silver.png');
+    game.load.image('Silver Axe', 'Assets/GameImages/Items/axe_silver.png');
+    game.load.image('Silver Sword', 'Assets/GameImages/Items/sword_silver.png');
+    game.load.image('Silver Shovel', 'Assets/GameImages/Items/shovel_silver.png');
+    game.load.image('Gold Pick', 'Assets/GameImages/Items/pick_gold.png');
+    game.load.image('Gold Axe', 'Assets/GameImages/Items/axe_gold.png');
+    game.load.image('Gold Sword', 'Assets/GameImages/Items/sword_gold.png');
+    game.load.image('Gold Shovel', 'Assets/GameImages/Items/shovel_gold.png');
+    game.load.image('Diamond Pick', 'Assets/GameImages/Items/pick_diamond.png');
+    game.load.image('Diamond Axe', 'Assets/GameImages/Items/axe_diamond.png');
+    game.load.image('Diamond Sword', 'Assets/GameImages/Items/sword_diamond.png');
+    game.load.image('Diamond Shovel', 'Assets/GameImages/Items/shovel_diamond.png');
+    game.load.image('Crafting Table', 'Assets/GameImages/Blocks/table.png');
+    game.load.image('Furnace', 'Assets/GameImages/Blocks/oven.png');
 }
 /**
  * This is where the variable that the game needs to run are filled
@@ -206,6 +213,9 @@ function create() {
     player.MineLevel = 1; //This is the players MineLevel
     player.handItem = 0; //This is used to take the data from inventory
     player.inventory = [];
+    player.spawnX = 200;
+    player.spawnY = 397;
+    player.health = 100;
     for (var e = 0; e <= 29; e++) {
         player.inventory.push({
             Name: "Null",
@@ -240,6 +250,10 @@ function create() {
         });
     }
 
+    furnace = game.add.sprite(window.innerWidth / 4, window.innerHeight / 10, 'furnaceInterface');
+    furnace.alpha = 0;
+    furnace.fixedToCamera = true;
+
     inventoryBarHighlighter = game.add.sprite(window.innerWidth / 4, window.innerHeight / 10, 'inventoryBarHighlighter');
     inventoryBarHighlighter.fixedToCamera = true;
     inventoryBarHighlighter.scale.setTo(0.83, 0.9);
@@ -250,47 +264,47 @@ function create() {
     inventory.items = [];
     inventory.items.crafting = new Array(9);
 
-    inventory.items.crafting[0] = game.add.sprite(window.innerWidth / 4 + 40, window.innerHeight / 10 + 250, 'planks');
+    inventory.items.crafting[0] = game.add.sprite(window.innerWidth / 4 + 40, window.innerHeight / 10 + 250, 'Planks');
     inventory.items.crafting[0].scale.setTo(0.8, 0.9);
     inventory.items.crafting[0].visible = false;
     inventory.items.crafting[0].fixedToCamera = true;
-    inventory.items.crafting[1] = game.add.sprite(window.innerWidth / 4 + 105, window.innerHeight / 10 + 250, 'planks');
+    inventory.items.crafting[1] = game.add.sprite(window.innerWidth / 4 + 105, window.innerHeight / 10 + 250, 'Planks');
     inventory.items.crafting[1].scale.setTo(0.8, 0.9);
     inventory.items.crafting[1].visible = false;
     inventory.items.crafting[1].fixedToCamera = true;
-    inventory.items.crafting[2] = game.add.sprite(window.innerWidth / 4 + 168, window.innerHeight / 10 + 250, 'planks');
+    inventory.items.crafting[2] = game.add.sprite(window.innerWidth / 4 + 168, window.innerHeight / 10 + 250, 'Planks');
     inventory.items.crafting[2].scale.setTo(0.8, 0.9);
     inventory.items.crafting[2].visible = false;
     inventory.items.crafting[2].fixedToCamera = true;
-    inventory.items.crafting[3] = game.add.sprite(window.innerWidth / 4 + 40, window.innerHeight / 10 + 330, 'planks');
+    inventory.items.crafting[3] = game.add.sprite(window.innerWidth / 4 + 40, window.innerHeight / 10 + 330, 'Planks');
     inventory.items.crafting[3].scale.setTo(0.8, 0.9);
     inventory.items.crafting[3].visible = false;
     inventory.items.crafting[3].fixedToCamera = true;
-    inventory.items.crafting[4] = game.add.sprite(window.innerWidth / 4 + 105, window.innerHeight / 10 + 330, 'planks');
+    inventory.items.crafting[4] = game.add.sprite(window.innerWidth / 4 + 105, window.innerHeight / 10 + 330, 'Planks');
     inventory.items.crafting[4].scale.setTo(0.8, 0.9);
     inventory.items.crafting[4].visible = false;
     inventory.items.crafting[4].fixedToCamera = true;
-    inventory.items.crafting[5] = game.add.sprite(window.innerWidth / 4 + 168, window.innerHeight / 10 + 330, 'planks');
+    inventory.items.crafting[5] = game.add.sprite(window.innerWidth / 4 + 168, window.innerHeight / 10 + 330, 'Planks');
     inventory.items.crafting[5].scale.setTo(0.8, 0.9);
     inventory.items.crafting[5].visible = false;
     inventory.items.crafting[5].fixedToCamera = true;
-    inventory.items.crafting[6] = game.add.sprite(window.innerWidth / 4 + 40, window.innerHeight / 10 + 410, 'planks');
+    inventory.items.crafting[6] = game.add.sprite(window.innerWidth / 4 + 40, window.innerHeight / 10 + 410, 'Planks');
     inventory.items.crafting[6].scale.setTo(0.8, 0.9);
     inventory.items.crafting[6].visible = false;
     inventory.items.crafting[6].fixedToCamera = true;
-    inventory.items.crafting[7] = game.add.sprite(window.innerWidth / 4 + 105, window.innerHeight / 10 + 410, 'planks');
+    inventory.items.crafting[7] = game.add.sprite(window.innerWidth / 4 + 105, window.innerHeight / 10 + 410, 'Planks');
     inventory.items.crafting[7].scale.setTo(0.8, 0.9);
     inventory.items.crafting[7].visible = false;
     inventory.items.crafting[7].fixedToCamera = true;
-    inventory.items.crafting[8] = game.add.sprite(window.innerWidth / 4 + 168, window.innerHeight / 10 + 410, 'planks');
+    inventory.items.crafting[8] = game.add.sprite(window.innerWidth / 4 + 168, window.innerHeight / 10 + 410, 'Planks');
     inventory.items.crafting[8].scale.setTo(0.8, 0.9);
     inventory.items.crafting[8].visible = false;
     inventory.items.crafting[8].fixedToCamera = true;
 
     inventoryTabButton = [];
     inventoryTabButton.push({
-        sprite: game.add.sprite(window.innerWidth / 4 + 120, window.innerHeight / 10 + 10, 'planks'),
-        tabSprite: game.add.sprite(window.innerWidth / 4 + 55, window.innerHeight / 10 + 10, 'planks')
+        sprite: game.add.sprite(window.innerWidth / 4 + 120, window.innerHeight / 10 + 10, 'Planks'),
+        tabSprite: game.add.sprite(window.innerWidth / 4 + 55, window.innerHeight / 10 + 10, 'Planks')
 
     });
     inventoryTabButton[0].sprite.scale.setTo(0.45, 0.45);
@@ -305,8 +319,8 @@ function create() {
     inventoryTabButton[0].tabSprite.events.onInputDown.add(changeTab, this);
 
     inventoryTabButton.push({
-        sprite: game.add.sprite(window.innerWidth / 4 + 310, window.innerHeight / 10 + 10, 'diamondPick'),
-        tabSprite: game.add.sprite(window.innerWidth / 4 + 240, window.innerHeight / 10 + 10, 'planks')
+        sprite: game.add.sprite(window.innerWidth / 4 + 310, window.innerHeight / 10 + 10, 'Diamond Pick'),
+        tabSprite: game.add.sprite(window.innerWidth / 4 + 240, window.innerHeight / 10 + 10, 'Planks')
 
     });
     inventoryTabButton[1].sprite.scale.setTo(0.45, 0.45);
@@ -321,51 +335,51 @@ function create() {
     inventoryTabButton[1].tabSprite.events.onInputDown.add(changeTab, this);
 
     //X, Y, sprite_name, tab, row, rowNum, maxRow, craftingslots, - upto 9 different ingredients
-    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'planks', 0, 0, 0, 0, 0, "wood", undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 4);
+    new InventoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'Planks', 0, 0, 0, 0, 0, "wood", undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 4);
 
-    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'craftingTable', 0, 1, 0, 1, 2, "planks", "planks", undefined, "planks", "planks");
+    new InventoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'Crafting Table', 0, 1, 0, 1, 2, "Planks", "Planks", undefined, "Planks", "Planks");
 
-    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'furnace', 0, 1, 1, 1, 2, "stone", "stone", "stone", "stone", undefined, "stone", "stone", "stone", "stone");
+    new InventoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'Furnace', 0, 1, 1, 1, 2, "stone", "stone", "stone", "stone", undefined, "stone", "stone", "stone", "stone");
 
-    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'woodPick', 1, 0, 0, 4, 3, "planks", "planks", "planks", undefined, "tree", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'Wood Pick', 1, 0, 0, 4, 3, "Planks", "Planks", "Planks", undefined, "wood", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'ironPick', 1, 0, 1, 4, 3, "iron_ore", "iron_ore", "iron_ore", undefined, "tree", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'Iron Pick', 1, 0, 1, 4, 3, "iron_ore", "iron_ore", "iron_ore", undefined, "wood", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'goldPick', 1, 0, 2, 4, 3, "gold_ore", "gold_ore", "gold_ore", undefined, "tree", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'Gold Pick', 1, 0, 2, 4, 3, "gold_ore", "gold_ore", "gold_ore", undefined, "wood", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'silverPick', 1, 0, 3, 4, 3, "silver_ore", "silver_ore", "silver_ore", undefined, "tree", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'Silver Pick', 1, 0, 3, 4, 3, "silver_ore", "silver_ore", "silver_ore", undefined, "wood", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'diamondPick', 1, 0, 4, 4, 3, "diamond_ore", "diamond_ore", "diamond_ore", undefined, "tree", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'Diamond Pick', 1, 0, 4, 4, 3, "diamond_ore", "diamond_ore", "diamond_ore", undefined, "wood", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'woodShovel', 1, 1, 0, 4, 3, undefined, "planks", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'Wood Shovel', 1, 1, 0, 4, 3, undefined, "Planks", undefined, undefined, "wood", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'ironShovel', 1, 1, 1, 4, 3, undefined, "iron_ore", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'Iron Shovel', 1, 1, 1, 4, 3, undefined, "iron_ore", undefined, undefined, "wood", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'goldShovel', 1, 1, 2, 4, 3, undefined, "gold_ore", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'Gold Shovel', 1, 1, 2, 4, 3, undefined, "gold_ore", undefined, undefined, "wood", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'silverShovel', 1, 1, 3, 4, 3, undefined, "silver_ore", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'Silver Shovel', 1, 1, 3, 4, 3, undefined, "silver_ore", undefined, undefined, "wood", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'diamondShovel', 1, 1, 4, 4, 3, undefined, "diamond_ore", undefined, undefined, "tree", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'Diamond Shovel', 1, 1, 4, 4, 3, undefined, "diamond_ore", undefined, undefined, "wood", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'woodAxe', 1, 2, 0, 4, 3, undefined, "planks", "planks", undefined, "tree", "planks", undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'Wood Axe', 1, 2, 0, 4, 3, undefined, "Planks", "Planks", undefined, "wood", "Planks", undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'ironAxe', 1, 2, 1, 4, 3, undefined, "iron_ore", "iron_ore", undefined, "tree", "iron_ore", undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'Iron Axe', 1, 2, 1, 4, 3, undefined, "iron_ore", "iron_ore", undefined, "wood", "iron_ore", undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'goldAxe', 1, 2, 2, 4, 3, undefined, "gold_ore", "gold_ore", undefined, "tree", "gold_ore", undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'Gold Axe', 1, 2, 2, 4, 3, undefined, "gold_ore", "gold_ore", undefined, "wood", "gold_ore", undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'silverAxe', 1, 2, 3, 4, 3, undefined, "silver_ore", "silver_ore", undefined, "tree", "silver_ore", undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'Silver Axe', 1, 2, 3, 4, 3, undefined, "silver_ore", "silver_ore", undefined, "wood", "silver_ore", undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'diamondAxe', 1, 2, 4, 4, 3, undefined, "diamond_ore", "diamond_ore", undefined, "tree", "diamond_ore", undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 220, window.innerHeight / 10 + 95, 'Diamond Axe', 1, 2, 4, 4, 3, undefined, "diamond_ore", "diamond_ore", undefined, "wood", "diamond_ore", undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'woodSword', 1, 3, 0, 4, 3, undefined, "planks", undefined, undefined, "planks", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'Wood Sword', 1, 3, 0, 4, 3, undefined, "Planks", undefined, undefined, "Planks", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'ironSword', 1, 3, 1, 4, 3, undefined, "iron_ore", undefined, undefined, "iron_ore", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'Iron Sword', 1, 3, 1, 4, 3, undefined, "iron_ore", undefined, undefined, "iron_ore", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'goldSword', 1, 3, 2, 4, 3, undefined, "gold_ore", undefined, undefined, "gold_ore", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'Gold Sword', 1, 3, 2, 4, 3, undefined, "gold_ore", undefined, undefined, "gold_ore", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'silverSword', 1, 3, 3, 4, 3, undefined, "silver_ore", undefined, undefined, "silver_ore", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'Silver Sword', 1, 3, 3, 4, 3, undefined, "silver_ore", undefined, undefined, "silver_ore", undefined, undefined, "wood", undefined);
 
-    new InvetoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'diamondSword', 1, 3, 4, 4, 3, undefined, "diamond_ore", undefined, undefined, "diamond_ore", undefined, undefined, "tree", undefined);
+    new InventoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'Diamond Sword', 1, 3, 4, 4, 3, undefined, "diamond_ore", undefined, undefined, "diamond_ore", undefined, undefined, "wood", undefined);
 
 
     for (var i = 0; i < inventory.items.length; i++) {
@@ -377,6 +391,58 @@ function create() {
 
     inventory.visible = false;
     inventory.fixedToCamera = true;
+
+    if(load == true){
+        load = false;
+        $.ajax({
+            type: 'GET',
+            url: "/retrievePlayer?username=" + username,
+            async: true,
+            dataType: 'jsonp',
+            contentType: 'application/javascript',
+            success: function (response) {
+                console.dir(response);
+                player.health = response.Data[0].Health;
+                player.spawnX = response.Data[0].SpawnX;
+                player.spawnY = response.Data[0].SpawnY;
+                //player.x = parseInt(response.Data[0].X);
+                //player.y = parseInt(response.Data[0].Y);
+
+                for(var e = 1; e < response.Data.length; e++){
+                    var amount = response.Data[e].Amount.split(",");
+                    var ItemHealth = response.Data[e].ItemHealth.split(",");
+                    var Name = response.Data[e].Name.split(",");
+                    var Placeable = response.Data[e].Placeable.split(",");
+                    var Strength = response.Data[e].Strength.split(",");
+
+                    for(var i = 0; i < amount.length; i++){
+                        if(amount[i] == ""){
+                            amount.splice(i, 1);
+                            ItemHealth.splice(i, 1);
+                            Name.splice(i, 1);
+                            Placeable.splice(i, 1);
+                            Strength.splice(i, 1);
+                            i = -1;
+                        }
+                        if(i != -1){
+                            player.inventory[i].Amount = amount[i];
+                            player.inventory[i].Health = ItemHealth[i];
+                            player.inventory[i].Name = Name[i];
+                            if(Placeable[i] == "true") {
+                                player.inventory[i].Placeable = true;
+                            }
+                            else{
+                                player.inventory[i].Placeable = false;
+                            }
+                            player.inventory[i].Strength = Strength[i];
+                            HUD();
+                        }
+
+                    }
+                }
+            }
+        });
+    }
 }
 
 /**
@@ -400,7 +466,7 @@ function create() {
  * @param {string} slotNine - This is the name of crafting ingredient nine
  * @constructor
  */
-function InvetoryItems(X, Y, name, Tab, Row, RowNum, MaxRow, craftingSlot, slotOne, slotTwo, slotThree, slotFour, slotFive, slotSix, slotSeven, slotEight, slotNine, amountToCraft) {
+function InventoryItems(X, Y, name, Tab, Row, RowNum, MaxRow, craftingSlot, slotOne, slotTwo, slotThree, slotFour, slotFive, slotSix, slotSeven, slotEight, slotNine, amountToCraft) {
     inventory.items.push({
         sprite: game.add.sprite(X, Y, name),
         Tab: Tab,
@@ -461,10 +527,12 @@ function changeTab(data) {
  * @param {int} amount - This is how many will be dropped when broken
  * @param {boolean} placeable - This determines whether the block is placeable
  * @param {int} strength - This is how strong the block is when held by the player
- * @param {int} growtime - This determines of long the block needs to grow/burn
+ * @param {int} growtime - This determines how long the block needs to grow
+ * @param {int} burnTime - This determines how long the block needs to burn
+ * @param {boolean} fuel - This determines whether the block is fuel for the furnace
  * @constructor
  */
-function ItemsData(name, minelevel, Health, amount, placeable, strength, growtime) {
+function ItemsData(name, minelevel, Health, amount, placeable, strength, growtime, burnTime, fuel) {
     this.Name = name;
     //this.MineLevel = minelevel;
     this.MineLevel = 1; //Testing Line
@@ -474,6 +542,8 @@ function ItemsData(name, minelevel, Health, amount, placeable, strength, growtim
     this.Placeable = placeable;
     this.Strength = strength;
     this.growTime = growtime;
+    this.burnTime = parseInt(burnTime);
+    this.fuel = fuel;
 }
 
 /**
@@ -483,47 +553,47 @@ function ItemsData(name, minelevel, Health, amount, placeable, strength, growtim
 function loadItems() {
     //This create all the item objects and fills them with data:
     //Name, Level it can be mined at, how many hits it takes, amount if drops and if it's placeable or not, how much damage it can do
-    items.push(new ItemsData("dirt", 1, 3, 1, true, 1, null));
-    items.push(new ItemsData("grass", 1, 3, 1, true, 1, null));
-    items.push(new ItemsData("unbreakable", 9999, 1, 1, true, 1, null));
-    items.push(new ItemsData("coal_block", 1, 3, 1, false, 1, null));
-    items.push(new ItemsData("iron_block", 2, 3, 1, true, 1, null));
-    items.push(new ItemsData("silver_block", 3, 3, 1, true, 1, null));
-    items.push(new ItemsData("gold_block", 4, 3, 1, true, 1, null));
-    items.push(new ItemsData("diamond_block", 5, 3, 1, true, 1, null));
-    items.push(new ItemsData("stone", 2, 3, 1, true, 1, null));
-    items.push(new ItemsData("coal_ore", 1, 3, 1, false, 1, null));
-    items.push(new ItemsData("iron_ore", 1, 3, 1, false, 1, null));
-    items.push(new ItemsData("silver_ore", 1, 3, 1, false, 1, null));
-    items.push(new ItemsData("gold_ore", 1, 3, 1, false, 1, null));
-    items.push(new ItemsData("diamond_ore", 1, 3, 1, false, 1, null));
-    items.push(new ItemsData("tree", 1, 3, 1, true, 1, null));
-    items.push(new ItemsData("wood", 1, 3, 1, true, 1, null));
-    items.push(new ItemsData("planks", 1, 3, 1, true, 1, null));
-    items.push(new ItemsData("leaf", 1, 3, 1, false, 1, null));
-    items.push(new ItemsData("treeSeed", 1, 3, 1, true, 1, 15));
-    items.push(new ItemsData("woodPick", 1, 3, 1, false, 2, null));
-    items.push(new ItemsData("woodAxe", 1, 3, 1, false, 2, null));
-    items.push(new ItemsData("woodSword", 1, 3, 1, false, 2, null));
-    items.push(new ItemsData("woodShovel", 1, 3, 1, false, 2, null));
-    items.push(new ItemsData("ironPick", 1, 3, 1, false, 3, null));
-    items.push(new ItemsData("ironAxe", 1, 3, 1, false, 3, null));
-    items.push(new ItemsData("ironSword", 1, 3, 1, false, 3, null));
-    items.push(new ItemsData("ironShovel", 1, 3, 1, false, 3, null));
-    items.push(new ItemsData("silverPick", 1, 3, 1, false, 4, null));
-    items.push(new ItemsData("silverAxe", 1, 3, 1, false, 4, null));
-    items.push(new ItemsData("silverSword", 1, 3, 1, false, 4, null));
-    items.push(new ItemsData("silverShovel", 1, 3, 1, false, 4, null));
-    items.push(new ItemsData("goldPick", 1, 3, 1, false, 5, null));
-    items.push(new ItemsData("goldAxe", 1, 3, 1, false, 5, null));
-    items.push(new ItemsData("goldSword", 1, 3, 1, false, 5, null));
-    items.push(new ItemsData("goldShovel", 1, 3, 1, false, 5, null));
-    items.push(new ItemsData("diamondPick", 1, 3, 1, false, 6, null));
-    items.push(new ItemsData("diamondAxe", 1, 3, 1, false, 6, null));
-    items.push(new ItemsData("diamondSword", 1, 3, 1, false, 6, null));
-    items.push(new ItemsData("diamondShovel", 1, 3, 1, false, 6, null));
-    items.push(new ItemsData("craftingTable", 1, 3, 1, true, 6, null));
-    items.push(new ItemsData("furnace", 1, 3, 1, true, 6, null));
+    items.push(new ItemsData("dirt", 1, 3, 1, true, 1, null, null, false));
+    items.push(new ItemsData("grass", 1, 3, 1, true, 1, null, null, false));
+    items.push(new ItemsData("unbreakable", 9999, 1, 1, true, 1, null, null, false));
+    items.push(new ItemsData("coal_block", 1, 3, 1, false, 1, null, null, false));
+    items.push(new ItemsData("iron_block", 2, 3, 1, true, 1, null, 30, true));
+    items.push(new ItemsData("silver_block", 3, 3, 1, true, 1, null, 30, true));
+    items.push(new ItemsData("gold_block", 4, 3, 1, true, 1, null, 30, true));
+    items.push(new ItemsData("diamond_block", 5, 3, 1, true, 1, null, 30, true));
+    items.push(new ItemsData("stone", 2, 3, 1, true, 1, null, null, false));
+    items.push(new ItemsData("coal_ore", 1, 3, 1, false, 1, null, 30, true));
+    items.push(new ItemsData("iron_ore", 1, 3, 1, false, 1, null, 30, true));
+    items.push(new ItemsData("silver_ore", 1, 3, 1, false, 1, null, 30, true));
+    items.push(new ItemsData("gold_ore", 1, 3, 1, false, 1, null, 30, true));
+    items.push(new ItemsData("diamond_ore", 1, 3, 1, false, 1, null, 30, true));
+    items.push(new ItemsData("tree", 1, 3, 1, true, 1, null, null, false));
+    items.push(new ItemsData("wood", 1, 3, 1, true, 1, null, 30, true));
+    items.push(new ItemsData("Planks", 1, 3, 1, true, 1, null, 30, true));
+    items.push(new ItemsData("leaf", 1, 3, 1, false, 1, null, null, false));
+    items.push(new ItemsData("treeSeed", 1, 3, 1, true, 1, 15, null, false));
+    items.push(new ItemsData("Wood Pick", 1, 3, 1, false, 2, null, null, false));
+    items.push(new ItemsData("Wood Axe", 1, 3, 1, false, 2, null, null, false));
+    items.push(new ItemsData("Wood Sword", 1, 3, 1, false, 2, null, null, false));
+    items.push(new ItemsData("Wood Shovel", 1, 3, 1, false, 2, null, null, false));
+    items.push(new ItemsData("Iron Pick", 1, 3, 1, false, 3, null, null, false));
+    items.push(new ItemsData("Iron Axe", 1, 3, 1, false, 3, null, null, false));
+    items.push(new ItemsData("Iron Sword", 1, 3, 1, false, 3, null, null, false));
+    items.push(new ItemsData("Iron Shovel", 1, 3, 1, false, 3, null, null, false));
+    items.push(new ItemsData("Silver Pick", 1, 3, 1, false, 4, null, null, false));
+    items.push(new ItemsData("Silver Axe", 1, 3, 1, false, 4, null, null, false));
+    items.push(new ItemsData("Silver Sword", 1, 3, 1, false, 4, null, null, false));
+    items.push(new ItemsData("Silver Shovel", 1, 3, 1, false, 4, null, null, false));
+    items.push(new ItemsData("Gold Pick", 1, 3, 1, false, 5, null, null, false));
+    items.push(new ItemsData("Gold Axe", 1, 3, 1, false, 5, null, null, false));
+    items.push(new ItemsData("Gold Sword", 1, 3, 1, false, 5, null, null, false));
+    items.push(new ItemsData("Gold Shovel", 1, 3, 1, false, 5, null, null, false));
+    items.push(new ItemsData("Diamond Pick", 1, 3, 1, false, 6, null, null, false));
+    items.push(new ItemsData("Diamond Axe", 1, 3, 1, false, 6, null, null, false));
+    items.push(new ItemsData("Diamond Sword", 1, 3, 1, false, 6, null, null, false));
+    items.push(new ItemsData("Diamond Shovel", 1, 3, 1, false, 6, null, null, false));
+    items.push(new ItemsData("Crafting Table", 1, 3, 1, true, 6, null, null, false));
+    items.push(new ItemsData("Furnace", 1, 3, 1, true, 6, null, null, false));
 }
 
 /**
@@ -547,9 +617,45 @@ function mouseClicked() {
         } else {
             blockStartY = mouseY; //This is used if the click if on the origin point
         }
+        if(game.input.mouse.button == 2){
+            for(var e = 0; e < blocksA.length; e++){
+                if(blockStartX == blocksA[e].x && blockStartY == blocksA[e].y && blocksA[e].alive == true){
+                    blockClicked = blocksA[e].key;
+                    blockClickedNum = e;
+                    if(blockClicked == "Furnace"){
+                        if(furnace.alpha == 100){
+                            furnace.alpha = 0;
+                        }
+                        else {
+                            furnace.alpha = 100;
+                            inventory.visible = false;
+                            inventoryBar.visible = false;
+                            var loopCount = 0;
+                            for (var e = 0; e < inventoryBar.inventory.length; e++) {
+                                if (inventoryBar.inventory[e] != undefined) {
+                                    inventoryBar.inventory[e].kill();
+                                    inventoryBar.inventory.splice(e, 1);
+                                    e = -1;
+                                }
+                                if (inventoryBarText[loopCount] != null) {
+                                    inventoryBarText[loopCount].text = "";
+                                    inventoryBarText[loopCount] = "Null";
+                                }
+                                loopCount++;
+                            }
+                            openFurnace();
+                            break;
+                        }
+                    }
+                    else if(blockClicked == "Crafting Table"){
+                       ePressed();
+                    }
+                }
+            }
+        }
         if ((mouseX < player.body.x + player.Reach && mouseX > player.body.x - player.Reach) && (mouseY < player.body.y + player.Reach && mouseY > player.body.y - player.Reach)) { //This checks that it is within a set distance from the player
             for (var e = 0; e < blocksA.length; e++) { //Loops through all blocks and checks position
-                if (blockStartX == blocksA[e].x && blockStartY == blocksA[e].y && blocksA[e].alive == true) { //Checks if positions are the same
+                if (game.input.mouse.button == 0 && blockStartX == blocksA[e].x && blockStartY == blocksA[e].y && blocksA[e].alive == true) { //Checks if positions are the same
                     if (blocksA[e].health >= 1 && blocksA[e].MineLevel <= player.MineLevel) { //Checks the Health of the block
                         blocksA[e].health--; //Damages the block
                         break;
@@ -595,7 +701,7 @@ function mouseClicked() {
                     }
                 }
             }
-            if (finishedLoop == true && player.handItem != -1 && player.inventory[player.handItem].Amount > 0) {
+            if (game.input.mouse.button == 2 && finishedLoop == true && player.handItem != -1 && player.inventory[player.handItem].Amount > 0) {
                 if ((blockStartX <= player.x && (blockStartX + blocksA[0].width) <= player.x) || (blockStartX >= player.x + player.width && (blockStartX + blocksA[0].width) >= player.x + player.width) || ((blockStartY <= player.y && (blockStartY + blocksA[0].height) <= player.y)) || (blockStartY >= player.y + player.height && (blockStartY + blocksA[0].height) >= player.y + player.height)) {
                     if (player.inventory[player.handItem].Placeable == true) {
                         finishedLoop = false; //Resets the variable 
@@ -617,19 +723,27 @@ function mouseClicked() {
                             }
                         }
                         if (plantable == true) {
-                            if (player.inventory[player.handItem].Name == "treeSeed") {
+                            var blockInPlace = false;
+                            for(var k = 0; k < blocksA.length; k++){
+                                if(blockStartX == blocksA[k].x && blockStartY == blocksA[k].y){
+                                    blockInPlace = true;
+                                }
+                            }
+                            if (player.inventory[player.handItem].Name == "treeSeed" && blockInPlace == false) {
                                 blocksA.unshift(trees.create(blockStartX, blockStartY, player.inventory[player.handItem].Name)); //Creates a new block
-                            } else {
+                            } else if(blockInPlace == false) {
                                 blocksA.unshift(blocks.create(blockStartX, blockStartY, player.inventory[player.handItem].Name)); //Creates a new block
                             }
 
-                            player.inventory[player.handItem].Amount--;
                             for (var q = 0; q < items.length; q++) {
-                                if (items[q].Name == blocksA[0].key) {
+                                if (items[q].Name == blocksA[0].key && blockInPlace == false) {
+                                    player.inventory[player.handItem].Amount--;
                                     blocksA[0].body.immovable = true; //Makes the block immovable
                                     blocksA[0].MineLevel = items[q].MineLevel; //This is the level of equipment needed to mine
                                     blocksA[0].Health = items[q].Health; //This is how many times the block needs to be hit
                                     blocksA[0].growTime = items[q].growTime; //This is how long it takes to grow - if it does
+                                    blocksA[0].fuel = items[q].fuel; //This is how long it takes to grow - if it does
+                                    blocksA[0].burnTime = items[q].burnTime; //This is how long it takes to grow - if it does
                                     blocksA[0].blockX = blocksA[0].body.x / 70; //This is the X position
                                     blocksA[0].blockY = blocksA[0].body.y / 70; //This is the Y position
                                 }
@@ -936,37 +1050,103 @@ function startDrag(block) {
  */
 function stopDrag(block) {
     var loopCount = 0;
-    for (var e = 0; e < inventoryBar.inventory.length; e++) {
-        if (block.x > inventoryBar.inventory[e].x && block.x < inventoryBar.inventory[e].x + inventoryBar.inventory[e].width &&
-            block.y > inventoryBar.inventory[e].y && block.y < inventoryBar.inventory[e].y + inventoryBar.inventory[e].height) {
-            console.log("This collides with: " + inventoryBar.inventory[e].key);
-            //Use .number to see which position they are in the array
-            var clickedBlockData;
-            for (var i = 0; i < items.length; i++) {
-                if (inventoryBar.inventory[e].key == items[i].Name) {
-                    clickedBlockData = i;
+    if(furnace.alpha == 0) {
+        for (var e = 0; e < inventoryBar.inventory.length; e++) {
+            if (block.x > inventoryBar.inventory[e].x && block.x < inventoryBar.inventory[e].x + inventoryBar.inventory[e].width &&
+                block.y > inventoryBar.inventory[e].y && block.y < inventoryBar.inventory[e].y + inventoryBar.inventory[e].height) {
+                console.log("This collides with: " + inventoryBar.inventory[e].key);
+                //Use .number to see which position they are in the array
+                var clickedBlockData;
+                for (var i = 0; i < items.length; i++) {
+                    if (inventoryBar.inventory[e].key == items[i].Name) {
+                        clickedBlockData = i;
+                    }
+                }
+
+                var object1Amount = player.inventory[block.number].Amount;
+                var object2Amount = player.inventory[e].Amount
+
+                player.inventory[block.number].Name = items[clickedBlockData].Name;
+                player.inventory[block.number].Amount = object2Amount;
+                player.inventory[block.number].MineLevel = items[clickedBlockData].MineLevel;
+                player.inventory[block.number].Health = items[clickedBlockData].Health;
+
+                for (var i = 0; i < items.length; i++) {
+                    if (block.key == items[i].Name) {
+                        clickedBlockData = i;
+                    }
+                }
+
+                player.inventory[e].Name = items[clickedBlockData].Name;
+                player.inventory[e].Amount = object1Amount;
+                player.inventory[e].MineLevel = items[clickedBlockData].MineLevel;
+                player.inventory[e].Health = items[clickedBlockData].Health;
+
+                for (var e = 0; e < inventoryBar.inventory.length; e++) {
+                    inventoryBar.inventory[e].kill();
+                    inventoryBar.inventory.splice(e, 1);
+                    inventoryBarText[loopCount].text = "";
+                    inventoryBarText[loopCount] = "Null";
+                    loopCount++;
+                    e = -1;
+                }
+
+                reDrawBar = true;
+                new HUD();
+                break;
+
+            } else if (e == inventoryBar.inventory.length - 1) {
+                loopCount = 0;
+                for (var i = 0; i < inventoryBar.inventory.length; i++) {
+                    inventoryBar.inventory[i].kill();
+                    inventoryBar.inventory.splice(i, 1);
+                    inventoryBarText[loopCount].text = "";
+                    inventoryBarText[loopCount] = "Null";
+                    loopCount++;
+                    i = -1;
+                }
+
+                reDrawBar = true;
+                if (furnace.alpha == 100) {
+                    new openFurnace();
+                }
+                else {
+                    new HUD();
                 }
             }
-
-            var object1Amount = player.inventory[block.number].Amount;
-            var object2Amount = player.inventory[e].Amount
-
-            player.inventory[block.number].Name = items[clickedBlockData].Name;
-            player.inventory[block.number].Amount = object2Amount;
-            player.inventory[block.number].MineLevel = items[clickedBlockData].MineLevel;
-            player.inventory[block.number].Health = items[clickedBlockData].Health;
-
-            for (var i = 0; i < items.length; i++) {
-                if (block.key == items[i].Name) {
-                    clickedBlockData = i;
-                }
+        }
+    }
+    else{
+        console.log(block.x + ", " + block.y);
+        for(var e = 0; e < items.length; e++){
+            if(block.key == items[e].Name){
+                block.burnTime = items[e].burnTime;
+                block.fuel = items[e].fuel;
             }
-
-            player.inventory[e].Name = items[clickedBlockData].Name;
-            player.inventory[e].Amount = object1Amount;
-            player.inventory[e].MineLevel = items[clickedBlockData].MineLevel;
-            player.inventory[e].Health = items[clickedBlockData].Health;
-
+        }
+        if(block.x >= furnace.x + furnace.width / 6 && block.x <= furnace.x + furnace.width / 4 && block.y >= furnace.y + furnace.height / 7 && block.y <= furnace.y + furnace.height / 3.2 && block.fuel == true){
+            console.log("Block inside fuel")
+            blocksA[blockClickedNum].fuel = block.key;
+            blocksA[blockClickedNum].burnTime = parseInt(block.burnTime * player.inventory[block.number].Amount);
+            player.inventory[block.number].Amount = 0;
+            player.inventory[block.number].Health = undefined;
+            player.inventory[block.number].MineLevel = undefined;
+            player.inventory[block.number].Name = "Null";
+            player.inventory[block.number].Placeable = undefined;
+            player.inventory[block.number].Strength = undefined;
+        }
+        else if(block.x >= furnace.x + furnace.width / 6 && block.x <= furnace.x + furnace.width / 4 && block.y >= furnace.y + furnace.height / 2.1 && block.y <= furnace.y + furnace.height / 1.56 && block.fuel == true){
+            blocksA[blockClickedNum].ingredientAmount = parseInt(player.inventory[block.number].Amount);
+            player.inventory[block.number].Amount = 0;
+            player.inventory[block.number].Health = undefined;
+            player.inventory[block.number].MineLevel = undefined;
+            player.inventory[block.number].Name = "Null";
+            player.inventory[block.number].Placeable = undefined;
+            player.inventory[block.number].Strength = undefined;
+            blocksA[blockClickedNum].ingredient = block.key;
+            blocksA[blockClickedNum].cookTime = parseInt(block.burnTime * blocksA[blockClickedNum].ingredientAmount);
+        }
+        else{
             for (var e = 0; e < inventoryBar.inventory.length; e++) {
                 inventoryBar.inventory[e].kill();
                 inventoryBar.inventory.splice(e, 1);
@@ -976,26 +1156,11 @@ function stopDrag(block) {
                 e = -1;
             }
 
-            reDrawBar = true;
-            new HUD();
-            break;
-
-        } else if (e == inventoryBar.inventory.length - 1) {
-            loopCount = 0;
-            for (var i = 0; i < inventoryBar.inventory.length; i++) {
-                inventoryBar.inventory[i].kill();
-                inventoryBar.inventory.splice(i, 1);
-                inventoryBarText[loopCount].text = "";
-                inventoryBarText[loopCount] = "Null";
-                loopCount++;
-                i = -1;
+            if (furnace.alpha == 100) {
+                new openFurnace();
             }
-
-            reDrawBar = true;
-            new HUD();
         }
     }
-
 }
 
 /**
@@ -1107,6 +1272,8 @@ function pickUpItems(first, second) {
                     player.inventory[e].MineLevel = items[item].MineLevel; //Makes the inventory slot equal to the item found
                     player.inventory[e].Strength = items[item].Strength; //Makes the inventory slot equal to the item found
                     player.inventory[e].Placeable = items[item].Placeable;
+                    player.inventory[e].burnTime = items[item].burnTime;
+                    player.inventory[e].fuel = items[item].fuel;
                     if (player.inventory[e].Amount == 0) {
                         if(second.amountToCraft != undefined) {
                             player.inventory[e].Amount += second.amountToCraft; //Add one to item if in inventory
@@ -1190,6 +1357,35 @@ function update() {
     //End of collision
     //Start of tree growth
     for (var e = 0; e < blocksA.length; e++) {
+        if(blocksA[e].key == "Furnace"){
+            if(blocksA[e].fuel != undefined && blocksA[e].ingredient != undefined){
+                if(blocksA[e].burnTime > 0 && blocksA[e].cookTime != undefined){
+                    blocksA[e].burnTime--;
+                    blocksA[e].cookTime--;
+                }
+                if(blocksA[e].cookTime <= 0){
+                    var itemToPlace;
+                    if(blocksA[e].ingredient == "iron_block"){
+                        itemToPlace = "iron_ore";
+                    }
+                    if(blocksA[e].ingredient == "silver_block"){
+                        itemToPlace = "silver_ore";
+                    }
+                    if(blocksA[e].ingredient == "gold_block"){
+                        itemToPlace = "gold_ore";
+                    }
+                    if(blocksA[e].ingredient == "diamond_block"){
+                        itemToPlace = "diamond_ore";
+                    }
+                    blocksA[e].ingredient = undefined;
+                    for(var f = 0; f <= blocksA[e].ingredientAmount; f++) {
+                        blocksAPickedUp[blocksAPickedUp.length] = blocksPickedUp.create(blocksA[e].body.x, blocksA[e].body.y - 50, itemToPlace);
+                        blocksAPickedUp[blocksAPickedUp.length - 1].scale.setTo(.4, .4);
+                    }
+                    console.log("item has cooked");
+                }
+            }
+        }
         if (blocksA[e].key == "treeSeed") {
             if (blocksA[e].growTime <= 0) {
                 blocksA[e].kill();
@@ -1740,13 +1936,196 @@ function controlInventoryScreen() {
 }
 
 /**
+ * This is where the furnace interface is drawn
+ * @constructor
+ */
+function openFurnace() {
+    save = game.add.sprite(0, 0, 'save');
+    save.inputEnabled = true;
+    save.events.onInputDown.add(upload, this);
+    save.fixedToCamera = true;
+
+    trash = game.add.sprite(0 + save.width, 0, 'trash');
+    trash.inputEnabled = true;
+    trash.events.onInputDown.add(clearLevel, this);
+    trash.fixedToCamera = true;
+    reDrawBar = true;
+    inventoryBarHighlighter.visible = false;
+    console.log("Furnace");
+    var X = 0;
+    var Y = 10;
+    for(var e = 0; e < 30; e++) {
+        var itemName = {Name: "Null"};
+        if (furnace.visible == true) {
+            if (player.inventory[e].Name != "Null") {
+                itemName = player.inventory[e];
+                switch (e) {
+                    case 0:
+                        X = 259;
+                        Y = 245;
+                        break;
+                    case 1:
+                        X = 322;
+                        Y = 245;
+                        break;
+                    case 2:
+                        X = 387;
+                        Y = 245;
+                        break;
+                    case 3:
+                        X = 450;
+                        Y = 245;
+                        break;
+                    case 4:
+                        X = 513;
+                        Y = 245;
+                        break;
+                    case 5:
+                        X = 578;
+                        Y = 245;
+                        break;
+                    case 6:
+                        X = 641;
+                        Y = 245;
+                        break;
+                    case 7:
+                        X = 705;
+                        Y = 245;
+                        break;
+                    case 8:
+                        X = 768;
+                        Y = 245;
+                        break;
+                    case 9:
+                        X = 831;
+                        Y = 245;
+                        break;
+                    case 10:
+                        X = 259;
+                        Y = 330;
+                        break;
+                    case 11:
+                        X = 322;
+                        Y = 330;
+                        break;
+                    case 12:
+                        X = 387;
+                        Y = 330;
+                        break;
+                    case 13:
+                        X = 249;
+                        Y = 330;
+                        break;
+                    case 14:
+                        X = 450;
+                        Y = 330;
+                        break;
+                    case 15:
+                        X = 578;
+                        Y = 330;
+                        break;
+                    case 16:
+                        X = 641;
+                        Y = 330;
+                        break;
+                    case 17:
+                        X = 705;
+                        Y = 330;
+                        break;
+                    case 18:
+                        X = 768;
+                        Y = 330;
+                        break;
+                    case 19:
+                        X = 831;
+                        Y = 330;
+                        break;
+                    case 20:
+                        X = 259;
+                        Y = 410;
+                        break;
+                    case 21:
+                        X = 322;
+                        Y = 410;
+                        break;
+                    case 22:
+                        X = 387;
+                        Y = 410;
+                        break;
+                    case 23:
+                        X = 249;
+                        Y = 410;
+                        break;
+                    case 24:
+                        X = 450;
+                        Y = 410;
+                        break;
+                    case 25:
+                        X = 578;
+                        Y = 410;
+                        break;
+                    case 26:
+                        X = 641;
+                        Y = 410;
+                        break;
+                    case 27:
+                        X = 705;
+                        Y = 410;
+                        break;
+                    case 28:
+                        X = 768;
+                        Y = 410;
+                        break;
+                    case 29:
+                        X = 831;
+                        Y = 410;
+                        break;
+                }
+            }
+            if(itemName.Name == "Null"){
+                reDrawBar = false;
+            }
+            if (itemName.Name != "Null" && itemName.Amount > 0 && (inventoryBarText[e] == "Null" || inventoryBarText[e] == undefined) || reDrawBar == true) {
+                inventoryBar.inventory[e] = game.add.sprite(inventoryBar.x + X - game.camera.x, inventoryBar.y - game.camera.y + Y, itemName.Name);
+                inventoryBar.inventory[e].inputEnabled = true;
+                inventoryBar.inventory[e].input.enableDrag();
+                inventoryBar.inventory[e].enableBody = true;
+                inventoryBar.inventory[e].events.onDragStart.add(startDrag, this);
+                inventoryBar.inventory[e].events.onDragStop.add(stopDrag, this);
+                if (furnace.visible == true) {
+                    inventoryBar.inventory[e].scale.setTo(0.8, 0.9);
+                }
+                inventoryBar.inventory[e].fixedToCamera = true;
+                inventoryBar.inventory[e].number = e;
+                inventoryBar.inventory[e].number = e;
+                inventoryBarText[e] = game.add.text(inventoryBar.x + X - game.camera.x, inventoryBar.y - game.camera.y + Y, player.inventory[e].Amount, {
+                    font: "32px Arial",
+                    fill: "#000000",
+                    align: "center"
+                });
+                inventoryBarText[e].fixedToCamera = true;
+            }
+        }
+        game.world.bringToTop(inventoryBarText);
+    }
+    reDrawBar = false;
+}
+
+/**
  * This is run when e is pressed and it either makes the crafting screen visible or invisible
  * @constructor
  */
 function ePressed() {
 
+    if(furnace.alpha == 100){
+        furnace.alpha = 0;
+        save.kill();
+        trash.kill();
+        inventory.visible = true;
+    }
     var loopCount = 0;
     if (inventoryBar.visible == false && updateInventory == false) { //Inventory bar not visible
+        blockClicked="";
         save.kill();
         trash.kill();
         for (var e = 0; e < inventory.items.length; e++) {
@@ -1781,13 +2160,15 @@ function ePressed() {
         }
         new HUD();
     } else { //Inventory bar visible
-        save = game.add.sprite(game.camera.x, game.camera.y, 'save');
+        save = game.add.sprite(0, 0, 'save');
         save.inputEnabled = true;
         save.events.onInputDown.add(upload, this);
+        save.fixedToCamera = true;
 
-        trash = game.add.sprite(game.camera.x + save.width, game.camera.y, 'trash');
+        trash = game.add.sprite(0 + save.width, 0, 'trash');
         trash.inputEnabled = true;
         trash.events.onInputDown.add(clearLevel, this);
+        trash.fixedToCamera = true;
         for (var e = 0; e < inventoryTabButton.length; e++) {
             inventoryTabButton[e].sprite.visible = true;
             inventoryTabButton[e].tabSprite.visible = true;
@@ -1812,7 +2193,13 @@ function ePressed() {
         inventoryControls[6].onDown.add(controlInventoryScreen, this);
         inventoryControls[7] = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
         inventoryControls[7].onDown.add(controlInventoryScreen, this);
-        inventoryType = 3;
+        if(blockClicked == "Crafting Table"){
+            inventoryType = 3;
+        }
+        else {
+            inventoryType = 2;
+            inventory.currentTab = 0;
+        }
         inventory.visible = true;
         reDrawBar = true;
         for (var e = 0; e < inventoryBar.inventory.length; e++) {
@@ -1838,6 +2225,7 @@ function ePressed() {
  */
 function clearLevel(){
     $.get("/delete?username=" + username + "&del=" + true);
+    $.get("/playerDelete?username=" + username + "&del=" + true);
 }
 
 /***
@@ -1898,10 +2286,32 @@ function upload() {
             dataLength = 0;
         }
     }
+    storeData = [];
+    dataLength = 0;
+    for(var e = 0; e < player.inventory.length; e++){
+        if(e == 0){
+            $.get("/playerDelete?username=" + username + "&del=" + true);
+            $.get("/playerSave?username=" + username + "&X=" + player.body.x  + "&Y=" + player.body.y + "&SpawnX=" + player.spawnX + "&SpawnY=" + player.spawnY + "&Health=" + player.health);
+        }
+        if(player.inventory[e].Name != "Null"){
+            if(dataLength + player.inventory.toString().length < 500) {
+                storeData.push(player.inventory[e].Amount + "," +  player.inventory[e].Name + "," +  player.inventory[e].Placeable + "," +  player.inventory[e].Strength + "," +  player.inventory[e].Health);
+            }
+            else{
+                $.get("/playerInventorySave?username=" + username + "&data=" + storeData);
+                storeData = [];
+                dataLength = 0;
+            }
+        }
+        if(e == player.inventory.length - 1){
+            $.get("/playerInventorySave?username=" + username + "&data=" + storeData);
+        }
+    }
+
 }
 
 /***
- * THis is where the loading of the level is handled
+ * This is where the loading of the level is handled
  * @constructor
  */
 function retrieve() {
@@ -1914,14 +2324,12 @@ function retrieve() {
         contentType: 'application/javascript',
         success: function (response) {
             console.dir(response);
-            //response.Data[0].Blocks
-            //response.Data[0].X
-            //response.Data[0].Y
             var name;
             var x;
             var y;
 
             for (var i = 0; i < response.Data.length; i++) {
+                load = true;
                 name = response.Data[i].Blocks.split(",");
                 name.splice(0, 1);
                 x = response.Data[i].X.split(",");
