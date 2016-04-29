@@ -5,54 +5,136 @@
     <script src="js/lib/phaser.min.js"></script>
     <script src="js/lib/jquery-1.12.0.min.js"></script>
     <script src="js/index.js"></script>
-    <?php include 'headers.php';?>
         <style type="text/css">
             body {
                 margin: 0;
             }
-            #logIn{
+            
+            #logIn {
                 padding-left: 40%;
                 padding-top: 15%;
             }
-            #logInButton{
-                border-left: 60%;
-            }
+            
             #myProgress {
-              position: relative;
-              width: 100%;
-              height: 30px;
-              background-color: #ddd;
+                position: relative;
+                width: 100%;
+                height: 30px;
+                background-color: #ddd;
             }
-
+            
             #myBar {
-              position: absolute;
-              width: 10%;
-              height: 100%;
-              background-color: #4CAF50;
+                position: absolute;
+                width: 10%;
+                height: 100%;
+                background-color: #4CAF50;
             }
-
+            
             #label {
-              text-align: center;
-              line-height: 30px;
-              color: white;
+                text-align: center;
+                line-height: 30px;
+                color: white;
+            }
+            
+            #instructions {
+                padding: 100px;
+                text-align: justify;
             }
         </style>
 </head>
 
 <body>
     <div id="logIn">
-        <label id="Message"></label><br><br>
-        <input type="text" id="Username" value="" placeholder="Enter username"><br><br>
-        <input type="text" id="Password" value="" placeholder="Enter password"><br><br>
-        <button type="button" id="logInButton" onclick="logIn()" style="width:170px">Log In</button><br><br>
+        <label id="Message"></label>
+        <br>
+        <br>
+        <input type="text" id="Username" value="" placeholder="Enter username">
+        <br>
+        <br>
+        <input type="text" id="Password" value="" placeholder="Enter password">
+        <br>
+        <br>
+        <button type="button" id="logInButton" onclick="logIn()" style="width:170px">Log In</button>
+        <br>
+        <br>
         <button type="button" id="createAccountButton" onclick="createAccount()" style="width:170px">Create Account</button>
+        <br>
+        <br>
+        <button type="button" id="openInstructions" onclick="showInstructions()" style="width:170px">Instructions</button>
+        <br>
+        <br>
+        <a href="https://github.com/scottishidiot/WGD">Github</a>
+        <br>
+        <br>
+        <a href="https://trello.com/b/bckxo7Nd/web-games-development-game-and-documentation-board">Trello</a>
     </div>
     <div id="myProgress">
         <div id="myBar">
-        <div id="label">10%</div>
+            <div id="label">10%</div>
         </div>
     </div>
-    
+    <div id="instructions">
+        <b>Controls:</b>
+        <br>
+        <br>
+
+        <b>W / Up Arrow:</b> Jump / Next item in row when crafting menu is open. Not all rows have multiple items
+        <br>
+        <b>A / Left Arrow:</b> Left / Left when crafting screen is open
+        <br>
+        <b>D / Right Arrow:</b> Right / Right when crafting screen is open
+        <br>
+        <b>S / Down Arrow:</b> Last item in row when crafting menu is open. Not all rows have multiple items
+        <br>
+        <br>
+        <b>E:</b> Crafting menu
+        <br>
+        <br>
+
+        <b>Left click on block:</b> Destroy block
+        <br>
+        <b>Left click on enemy:</b> attack enemy
+        <br>
+        <b>Right click on block:</b> Use block (Furnace, Crafting Table, Ship)
+        <br>
+        <b>Right click in empty space:</b> Place block in hand
+        <br>
+        <br>
+
+        <b>Saving / Deleting save</b>
+        <br>
+        <br> To save game simply open the crafting menu and in the top left hand of the screen two buttons will appear (save and delete) simply click on either of these buttons and wait a few seconds
+        <br>
+        <br>
+
+        <b>Tree growth:</b>
+        <br>
+        <br> To grow trees simply collect seeds from leaf blocks and then plant them on dirt or grass with nothing above them.
+        <br>
+        <br>
+
+        <b>How to Craft:</b>
+        <br>
+        <br> Pressing 'E' opens the crafting interface which allows the crafting of small items that do not require a crafting table.
+        <br>
+        <br> To craft bigger items and tools you need to craft a crafting table and then right click the block.
+        <br>
+        <br> Once the interface is open to craft an item simply click on it and if you have the right materials which are shown below the craftable items then the item will be created and spawn above the player.
+        <br>
+        <br> To find the tools simply click on the tool tab at the tob of the interface. To change the item shown in the current row press the "W or Up arrow"
+        <br>
+        <br>
+
+
+        <b>How to use the furnace:</b>
+        <br>
+        <br> Right clicking on the furnace block opens the interface. Drag and drop a fuel item such as coal ore into the top box and then drag and drop the item you want smelted such as an iron block. After a certain amount of time a smelted ore will be created atop of the furnace.
+        <br>
+        <br>
+        <button type="button" id="back" onclick="backToLogIn()" style="width:170px">Back</button>
+        <br>
+        <br>
+    </div>
+
 </body>
 
 </html>

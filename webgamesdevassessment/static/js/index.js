@@ -1,12 +1,32 @@
-// TODO - Clear inventory bar selector on furnace, make furnace useable, player spawn point, player server save
+//B00241633 & B00241842
 
 /**
- * This is used to hdie the progress bar
+ * This is used to hide the progress bar
  * @constructor
  */
 window.onload = function () {
     $("#myProgress").hide();
+    $("#instructions").hide();
+};
+
+/**
+ * This function shows the instructions screen
+ * @constructor
+ */
+function showInstructions() {
+    $("#instructions").show();
+    $("#logIn").hide();
 }
+
+/**
+ * This function shows the main screen
+ * @constructor
+ */
+function backToLogIn() {
+    $("#instructions").hide();
+    $("#logIn").show();
+}
+
 var username;
 /**
  * This is where the player attempts to log-in
@@ -22,10 +42,9 @@ function logIn() {
         async: true,
         contentType: 'application/javascript',
         success: function (response) {
-            console.dir(response);
             if (response == "Correct log in") {
                 $("#logIn").hide();
-                retrieve();
+                new retrieve();
             } else if (response == "Incorrect log in") {
                 $("#Username").val("");
                 $("#Password").val("");
@@ -49,20 +68,24 @@ function createAccount() {
         async: true,
         contentType: 'application/javascript',
         success: function (response) {
-            console.dir(response);
             if (response == "Account created") {
                 $("#logIn").hide();
-                retrieve();
+                new retrieve();
             } else if (response == "Username in use") {
                 $("#Username").val("");
                 $("#Password").val("");
-                $("#Message").val("This account is already in use");
+                $("#Message").text("Username already in use");
             }
         }
     });
 }
+
 var game;
 
+/**
+ * This is where game is created
+ * @constructor
+ */
 function startGame() {
     $("#myProgress").show();
     game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.CANVAS, '', {
@@ -91,7 +114,6 @@ var inventoryControls;
 var inventoryTabButton;
 var updateInventory = false;
 var blockKeyData = [];
-var width = 0;
 var inventoryType;
 var startX;
 var startY;
@@ -103,21 +125,29 @@ var blockClicked = undefined;
 var blockClickedNum = undefined;
 var furnace;
 var load = false;
+var healthIcons = [];
+var enemies = [];
+var enemiesG = [];
+var attackG = [];
+var lastEnemy = 30;
+var time = 0;
+var sun;
+var cursors;
+var style;
+
 /**
  * This is the loading bar that shows when the player has logged in
  * @constructor
  */
 function updateProgressBar() {
     game.canvas.id = 'game';
-    //console.log(game.load.progress);
     var elem = document.getElementById("myBar");
     if (game.load.progress <= 100) {
         elem.style.width = game.load.progress + '%';
         document.getElementById("label").innerHTML = game.load.progress * 1 + '%';
     }
-
     if (game.load.progress == 100) {
-        $("#myBar").css('height', 0);
+        $("myBar").css('height', 0);
         $("#game").css({
             'position': 'fixed',
             'top': '0px'
@@ -150,6 +180,9 @@ function preload() {
     game.load.image('furnaceInterface', 'Assets/GameImages/HUD/furnace.png');
     game.load.image('save', 'Assets/GameImages/HUD/save.png');
     game.load.image('trash', 'Assets/GameImages/HUD/trashcanOpen.png');
+    game.load.image('fullHeart', 'Assets/GameImages/HUD/hud_heartFull.png');
+    game.load.image('halfHeart', 'Assets/GameImages/HUD/hud_heartHalf.png');
+    game.load.image('emptyHeart', 'Assets/GameImages/HUD/hud_heartEmpty.png');
     game.load.image('inventoryBarHighlighter', 'Assets/GameImages/HUD/blue_panel.png');
     game.load.image('coal_ore', 'Assets/GameImages/Items/ore_coal.png');
     game.load.image('iron_ore', 'Assets/GameImages/Items/ore_ironAlt.png');
@@ -181,15 +214,24 @@ function preload() {
     game.load.image('Diamond Axe', 'Assets/GameImages/Items/axe_diamond.png');
     game.load.image('Diamond Sword', 'Assets/GameImages/Items/sword_diamond.png');
     game.load.image('Diamond Shovel', 'Assets/GameImages/Items/shovel_diamond.png');
+    game.load.image('apple', 'Assets/GameImages/Items/apple.png');
     game.load.image('Crafting Table', 'Assets/GameImages/Blocks/table.png');
     game.load.image('Furnace', 'Assets/GameImages/Blocks/oven.png');
+    game.load.image('Ship', 'Assets/GameImages/Blocks/shipGreen.png');
+    game.load.image('flyDead', 'Assets/GameImages/Enemy/flyDead.png');
+    game.load.image('fly1', 'Assets/GameImages/Enemy/flyFly1.png');
+    game.load.image('fly2', 'Assets/GameImages/Enemy/flyFly2.png');
+    game.load.image('fireball', 'Assets/GameImages/Enemy/fireball.png');
+    game.load.image('night', 'Assets/GameImages/Background/blue.png');
+    game.load.image('moon', 'Assets/GameImages/Background/moon.png');
+    game.load.image('sun', 'Assets/GameImages/Background/sun.png');
 }
 /**
  * This is where the variable that the game needs to run are filled
  * @constructor
  */
 function create() {
-    var style = {
+    style = {
         font: "16px Arial",
         fill: "#000000",
         wordWrap: false,
@@ -198,10 +240,10 @@ function create() {
     };
     toolTip = game.add.text(0, 0, "", style);
 
-    game.stage.backgroundColor = '#ffffff'
+    game.stage.backgroundColor = '#ffffff';
     game.canvas.oncontextmenu = function (e) {
         e.preventDefault();
-    }
+    };
     game.world.setBounds(0, 0, 5000, 1000);
     cursors = game.input.keyboard.createCursorKeys();
     bg = game.add.sprite(0, 0, 'bgAbove');
@@ -216,7 +258,7 @@ function create() {
     player.spawnX = 200;
     player.spawnY = 397;
     player.health = 100;
-    for (var e = 0; e <= 29; e++) {
+    for (var a = 0; a <= 29; a++) {
         player.inventory.push({
             Name: "Null",
             MineLevel: 0,
@@ -224,11 +266,20 @@ function create() {
             Amount: 0
         });
     }
+
+    sun = game.add.sprite(0, 0, "sun");
+    game.physics.arcade.enable(sun);
+    sun.fixedToCamera = true;
+    sun.timeFrame = "Day";
     player.body.bounce.y = 0.2;
     player.body.gravity.y = 350;
     player.body.collideWorldBounds = true;
     blocks = game.add.group();
     blocks.enableBody = true;
+    enemiesG = game.add.group();
+    enemiesG.enableBody = true;
+    attackG = game.add.group();
+    attackG.enableBody = true;
     trees = game.add.group();
     trees.enableBody = true;
     blocksPickedUp = game.add.group();
@@ -238,16 +289,25 @@ function create() {
     inventoryBar = game.add.sprite(window.innerWidth / 4, window.innerHeight / 10, 'inventoryBar');
     inventoryBar.fixedToCamera = true;
     inventoryBar.inventory = [];
-    for (var e = 0; e < 9; e++) {
+    for (var b = 0; b < 9; b++) {
         inventoryBar.inventory.push();
     }
     inventoryBar.crafting = [];
-    for (var e = 0; e < 4; e++) {
+    for (var c = 0; c < 4; c++) {
         inventoryBar.crafting.push({
             Key: "",
             Amount: "",
             Number: ""
         });
+    }
+    for (var e = 0; e < 10; e++) {
+        if (e > 0) {
+            healthIcons.push(game.add.sprite(healthIcons[e - 1].x + healthIcons[e - 1].width, 10, 'fullHeart'));
+        } else {
+            healthIcons.push(game.add.sprite(inventoryBar.x + 150, 10, 'fullHeart'));
+        }
+        game.world.bringToTop(healthIcons[e]);
+        healthIcons[e].fixedToCamera = true;
     }
 
     furnace = game.add.sprite(window.innerWidth / 4, window.innerHeight / 10, 'furnaceInterface');
@@ -334,12 +394,14 @@ function create() {
     inventoryTabButton[1].tabSprite.visible = false;
     inventoryTabButton[1].tabSprite.events.onInputDown.add(changeTab, this);
 
-    //X, Y, sprite_name, tab, row, rowNum, maxRow, craftingslots, - upto 9 different ingredients
+    //X, Y, sprite_name, tab, row, rowNum, maxRow, craftingslots, - up to 9 different ingredients
     new InventoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'Planks', 0, 0, 0, 0, 0, "wood", undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 4);
 
     new InventoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'Crafting Table', 0, 1, 0, 1, 2, "Planks", "Planks", undefined, "Planks", "Planks");
 
-    new InventoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'Furnace', 0, 1, 1, 1, 2, "stone", "stone", "stone", "stone", undefined, "stone", "stone", "stone", "stone");
+    new InventoryItems(window.innerWidth / 4 + 140, window.innerHeight / 10 + 95, 'Furnace', 0, 1, 1, 1, 3, "stone", "stone", "stone", "stone", undefined, "stone", "stone", "stone", "stone");
+
+    new InventoryItems(window.innerWidth / 4 + 300, window.innerHeight / 10 + 95, 'Ship', 0, 3, 0, 0, 3, undefined, undefined, undefined, "Planks", "Planks", "Planks", "Planks", "Planks", "Planks");
 
     new InventoryItems(window.innerWidth / 4 + 58, window.innerHeight / 10 + 95, 'Wood Pick', 1, 0, 0, 4, 3, "Planks", "Planks", "Planks", undefined, "wood", undefined, undefined, "wood", undefined);
 
@@ -392,7 +454,7 @@ function create() {
     inventory.visible = false;
     inventory.fixedToCamera = true;
 
-    if(load == true){
+    if (load == true) {
         load = false;
         $.ajax({
             type: 'GET',
@@ -401,22 +463,21 @@ function create() {
             dataType: 'jsonp',
             contentType: 'application/javascript',
             success: function (response) {
-                console.dir(response);
-                player.health = response.Data[0].Health;
-                player.spawnX = response.Data[0].SpawnX;
-                player.spawnY = response.Data[0].SpawnY;
-                //player.x = parseInt(response.Data[0].X);
-                //player.y = parseInt(response.Data[0].Y);
+                player.health = parseInt(response.Data[0].Health);
+                player.spawnX = parseInt(response.Data[0].SpawnX);
+                player.spawnY = parseInt(response.Data[0].SpawnY);
+                player.body.x = parseInt(response.Data[0].X);
+                player.body.y = parseInt(response.Data[0].Y);
 
-                for(var e = 1; e < response.Data.length; e++){
+                for (var e = 1; e < response.Data.length; e++) {
                     var amount = response.Data[e].Amount.split(",");
                     var ItemHealth = response.Data[e].ItemHealth.split(",");
                     var Name = response.Data[e].Name.split(",");
                     var Placeable = response.Data[e].Placeable.split(",");
                     var Strength = response.Data[e].Strength.split(",");
 
-                    for(var i = 0; i < amount.length; i++){
-                        if(amount[i] == ""){
+                    for (var i = 0; i < amount.length; i++) {
+                        if (amount[i] == "") {
                             amount.splice(i, 1);
                             ItemHealth.splice(i, 1);
                             Name.splice(i, 1);
@@ -424,18 +485,17 @@ function create() {
                             Strength.splice(i, 1);
                             i = -1;
                         }
-                        if(i != -1){
-                            player.inventory[i].Amount = amount[i];
-                            player.inventory[i].Health = ItemHealth[i];
+                        if (i != -1) {
+                            player.inventory[i].Amount = parseInt(amount[i]);
+                            player.inventory[i].Health = parseInt(ItemHealth[i]);
                             player.inventory[i].Name = Name[i];
-                            if(Placeable[i] == "true") {
+                            if (Placeable[i] == "true") {
                                 player.inventory[i].Placeable = true;
-                            }
-                            else{
+                            } else {
                                 player.inventory[i].Placeable = false;
                             }
-                            player.inventory[i].Strength = Strength[i];
-                            HUD();
+                            player.inventory[i].Strength = parseInt(Strength[i]);
+                            new HUD();
                         }
 
                     }
@@ -464,6 +524,7 @@ function create() {
  * @param {string} slotSeven - This is the name of crafting ingredient seven
  * @param {string} slotEight - This is the name of crafting ingredient eight
  * @param {string} slotNine - This is the name of crafting ingredient nine
+ * @param {int} amountToCraft - This is used when the item has been crafted
  * @constructor
  */
 function InventoryItems(X, Y, name, Tab, Row, RowNum, MaxRow, craftingSlot, slotOne, slotTwo, slotThree, slotFour, slotFive, slotSix, slotSeven, slotEight, slotNine, amountToCraft) {
@@ -534,10 +595,8 @@ function changeTab(data) {
  */
 function ItemsData(name, minelevel, Health, amount, placeable, strength, growtime, burnTime, fuel) {
     this.Name = name;
-    //this.MineLevel = minelevel;
-    this.MineLevel = 1; //Testing Line
-    //this.Health = Health;
-    this.Health = 1; //Testing Line
+    this.MineLevel = minelevel;
+    this.Health = Health;
     this.Amount = amount;
     this.Placeable = placeable;
     this.Strength = strength;
@@ -570,30 +629,32 @@ function loadItems() {
     items.push(new ItemsData("tree", 1, 3, 1, true, 1, null, null, false));
     items.push(new ItemsData("wood", 1, 3, 1, true, 1, null, 30, true));
     items.push(new ItemsData("Planks", 1, 3, 1, true, 1, null, 30, true));
-    items.push(new ItemsData("leaf", 1, 3, 1, false, 1, null, null, false));
+    items.push(new ItemsData("leaf", 1, 1, 1, false, 1, null, null, false));
     items.push(new ItemsData("treeSeed", 1, 3, 1, true, 1, 15, null, false));
-    items.push(new ItemsData("Wood Pick", 1, 3, 1, false, 2, null, null, false));
-    items.push(new ItemsData("Wood Axe", 1, 3, 1, false, 2, null, null, false));
-    items.push(new ItemsData("Wood Sword", 1, 3, 1, false, 2, null, null, false));
-    items.push(new ItemsData("Wood Shovel", 1, 3, 1, false, 2, null, null, false));
-    items.push(new ItemsData("Iron Pick", 1, 3, 1, false, 3, null, null, false));
-    items.push(new ItemsData("Iron Axe", 1, 3, 1, false, 3, null, null, false));
-    items.push(new ItemsData("Iron Sword", 1, 3, 1, false, 3, null, null, false));
-    items.push(new ItemsData("Iron Shovel", 1, 3, 1, false, 3, null, null, false));
-    items.push(new ItemsData("Silver Pick", 1, 3, 1, false, 4, null, null, false));
-    items.push(new ItemsData("Silver Axe", 1, 3, 1, false, 4, null, null, false));
-    items.push(new ItemsData("Silver Sword", 1, 3, 1, false, 4, null, null, false));
-    items.push(new ItemsData("Silver Shovel", 1, 3, 1, false, 4, null, null, false));
-    items.push(new ItemsData("Gold Pick", 1, 3, 1, false, 5, null, null, false));
-    items.push(new ItemsData("Gold Axe", 1, 3, 1, false, 5, null, null, false));
-    items.push(new ItemsData("Gold Sword", 1, 3, 1, false, 5, null, null, false));
-    items.push(new ItemsData("Gold Shovel", 1, 3, 1, false, 5, null, null, false));
-    items.push(new ItemsData("Diamond Pick", 1, 3, 1, false, 6, null, null, false));
-    items.push(new ItemsData("Diamond Axe", 1, 3, 1, false, 6, null, null, false));
-    items.push(new ItemsData("Diamond Sword", 1, 3, 1, false, 6, null, null, false));
-    items.push(new ItemsData("Diamond Shovel", 1, 3, 1, false, 6, null, null, false));
-    items.push(new ItemsData("Crafting Table", 1, 3, 1, true, 6, null, null, false));
+    items.push(new ItemsData("Wood Pick", 1, 10, 1, false, 2, null, null, false));
+    items.push(new ItemsData("Wood Axe", 1, 10, 1, false, 2, null, null, false));
+    items.push(new ItemsData("Wood Sword", 1, 10, 1, false, 2, null, null, false));
+    items.push(new ItemsData("Wood Shovel", 1, 10, 1, false, 2, null, null, false));
+    items.push(new ItemsData("Iron Pick", 1, 20, 1, false, 3, null, null, false));
+    items.push(new ItemsData("Iron Axe", 1, 20, 1, false, 3, null, null, false));
+    items.push(new ItemsData("Iron Sword", 1, 20, 1, false, 3, null, null, false));
+    items.push(new ItemsData("Iron Shovel", 1, 20, 1, false, 3, null, null, false));
+    items.push(new ItemsData("Silver Pick", 1, 30, 1, false, 4, null, null, false));
+    items.push(new ItemsData("Silver Axe", 1, 30, 1, false, 4, null, null, false));
+    items.push(new ItemsData("Silver Sword", 1, 30, 1, false, 4, null, null, false));
+    items.push(new ItemsData("Silver Shovel", 1, 30, 1, false, 4, null, null, false));
+    items.push(new ItemsData("Gold Pick", 1, 40, 1, false, 5, null, null, false));
+    items.push(new ItemsData("Gold Axe", 1, 40, 1, false, 5, null, null, false));
+    items.push(new ItemsData("Gold Sword", 1, 40, 1, false, 5, null, null, false));
+    items.push(new ItemsData("Gold Shovel", 1, 40, 1, false, 5, null, null, false));
+    items.push(new ItemsData("Diamond Pick", 1, 50, 1, false, 6, null, null, false));
+    items.push(new ItemsData("apple", 1, 3, 1, false, 6, null, null, false));
+    items.push(new ItemsData("Diamond Axe", 1, 50, 1, false, 6, null, null, false));
+    items.push(new ItemsData("Diamond Sword", 1, 50, 1, false, 6, null, null, false));
+    items.push(new ItemsData("Diamond Shovel", 1, 50, 1, false, 6, null, null, false));
+    items.push(new ItemsData("Crafting Table", 1, 50, 1, true, 6, null, null, false));
     items.push(new ItemsData("Furnace", 1, 3, 1, true, 6, null, null, false));
+    items.push(new ItemsData("Ship", 1, 3, 1, true, 6, null, null, false));
 }
 
 /**
@@ -601,8 +662,8 @@ function loadItems() {
  * @constructor
  */
 function mouseClicked() {
-    var mouseX = game.input.mousePointer.x + game.camera.x; //Gets X postion of mouse and adds the current camera position  
-    var mouseY = game.input.mousePointer.y + game.camera.y; //Gets Y postion of mouse and adds the current camera position
+    var mouseX = game.input.mousePointer.x + game.camera.x; //Gets X position of mouse and adds the current camera position
+    var mouseY = game.input.mousePointer.y + game.camera.y; //Gets Y position of mouse and adds the current camera position
     var blockStartX; //This is used to store the origin point of the block
     var blockStartY; //This is used to store the origin point of the block
     var finishedLoop = false; //This is used to check if all blocks have been checked
@@ -617,16 +678,37 @@ function mouseClicked() {
         } else {
             blockStartY = mouseY; //This is used if the click if on the origin point
         }
-        if(game.input.mouse.button == 2){
-            for(var e = 0; e < blocksA.length; e++){
-                if(blockStartX == blocksA[e].x && blockStartY == blocksA[e].y && blocksA[e].alive == true){
-                    blockClicked = blocksA[e].key;
-                    blockClickedNum = e;
-                    if(blockClicked == "Furnace"){
-                        if(furnace.alpha == 100){
-                            furnace.alpha = 0;
+        if (game.input.mouse.button == 2) {
+            for (var d = 0; d < blocksA.length; d++) {
+                if (player.inventory[player.handItem].Name == "apple") {
+                    if (player.health < 100) {
+                        player.health += 20;
+                        player.inventory[player.handItem].Amount--;
+                        if (player.inventory[player.handItem].Amount <= 0) {
+
+                            inventoryBar.inventory[player.handItem].kill();
+                            player.inventory[player.handItem] = {
+                                Name: "Null",
+                                Amount: 0,
+                                MineLevel: 1,
+                                Health: 0
+                            };
+                            new HUD();
                         }
-                        else {
+                    }
+                    break;
+                }
+                if (blockStartX == blocksA[d].x && blockStartY == blocksA[d].y && blocksA[d].alive == true) {
+                    blockClicked = blocksA[d].key;
+                    blockClickedNum = d;
+                    if (blockClicked == "Ship") {
+                        player.spawnX = parseInt(player.body.x);
+                        player.spawnY = parseInt(player.body.y);
+                    }
+                    if (blockClicked == "Furnace") {
+                        if (furnace.alpha == 100) {
+                            furnace.alpha = 0;
+                        } else {
                             furnace.alpha = 100;
                             inventory.visible = false;
                             inventoryBar.visible = false;
@@ -643,12 +725,11 @@ function mouseClicked() {
                                 }
                                 loopCount++;
                             }
-                            openFurnace();
+                            new openFurnace();
                             break;
                         }
-                    }
-                    else if(blockClicked == "Crafting Table"){
-                       ePressed();
+                    } else if (blockClicked == "Crafting Table") {
+                        new ePressed();
                     }
                 }
             }
@@ -656,10 +737,40 @@ function mouseClicked() {
         if ((mouseX < player.body.x + player.Reach && mouseX > player.body.x - player.Reach) && (mouseY < player.body.y + player.Reach && mouseY > player.body.y - player.Reach)) { //This checks that it is within a set distance from the player
             for (var e = 0; e < blocksA.length; e++) { //Loops through all blocks and checks position
                 if (game.input.mouse.button == 0 && blockStartX == blocksA[e].x && blockStartY == blocksA[e].y && blocksA[e].alive == true) { //Checks if positions are the same
-                    if (blocksA[e].health >= 1 && blocksA[e].MineLevel <= player.MineLevel) { //Checks the Health of the block
-                        blocksA[e].health--; //Damages the block
-                        break;
-                    } else if (blocksA[e].health <= 0 && blocksA[e].MineLevel <= player.MineLevel) {
+                    if (blocksA[e].Health >= 1 && blocksA[e].MineLevel <= player.MineLevel) { //Checks the Health of the block
+                        var itemHeld = player.inventory[player.handItem].Name;
+                        var blockName = blocksA[e].key;
+                        if ((itemHeld == "Wood Shovel" || itemHeld == "Iron Shovel" || itemHeld == "Gold Shovel" || itemHeld == "Diamond Shovel") && (blockName == "dirt" || blockName == "grass")) {
+                            blocksA[e].Health = blocksA[e].Health - 2;
+                            player.inventory[player.handItem].Health--;
+                        } else if ((itemHeld == "Wood Pick" || itemHeld == "Iron Pick" || itemHeld == "Gold Pick" || itemHeld == "Diamond Pick") && (blockName == "stone" || blockName == "coal_block" || blockName == "iron_block" || blockName == "silver_block" || blockName == "gold_block" || blockName == "diamond_block")) {
+                            blocksA[e].Health = blocksA[e].Health - 2;
+                            player.inventory[player.handItem].Health--;
+                        } else if ((itemHeld == "Wood Axe" || itemHeld == "Iron Axe" || itemHeld == "Gold Axe" || itemHeld == "Diamond Axe") && (blockName == "tree" || blockName == "wood")) {
+                            blocksA[e].Health = blocksA[e].Health - 2;
+                            player.inventory[player.handItem].Health--;
+                        } else {
+                            blocksA[e].Health--; //Damages the block
+                        }
+                        if (player.inventory[player.handItem].Health <= 0) {
+                            if (player.inventory[player.handItem].Amount > 1) {
+                                player.inventory[player.handItem].Amount--;
+                                for (var e = 0; e < items.length; e++) {
+                                    if (player.inventory[player.handItem].Name == items[e].Name) {
+                                        player.inventory[player.handItem].Health = items[e].Health;
+                                        break;
+                                    }
+                                }
+                                new HUD();
+                            } else if (player.inventory[player.handItem].Name != "Null" && player.inventory[player.handItem].Amount == 1) {
+                                player.inventory[player.handItem].Amount--;
+                                player.inventory[player.handItem].MineLevel = 0;
+                                player.MineLevel = 1;
+                                new HUD();
+                            }
+                        }
+                    }
+                    if (blocksA[e].Health <= 0 && blocksA[e].MineLevel <= player.MineLevel) {
                         var minX = blocksA[e].body.x + 10; //Random X minimum
                         var maxX = blocksA[e].body.x + (blocksA[e].body.width - 10); //Random X maximum
                         var randomX = Math.floor(Math.random() * (maxX - minX) + minX); //Finds a random X
@@ -672,8 +783,11 @@ function mouseClicked() {
                             if (randomNum == 1) {
                                 blocksA[e].key = "treeSeed";
                                 blockDropped = "item";
+                            } else if (randomNum == 2) {
+                                blocksA[e].key = "apple";
+                                blockDropped = "item";
                             }
-                        } else if(blocksA[e].key == "tree"){
+                        } else if (blocksA[e].key == "tree") {
                             blocksA[e].key = "wood";
                             blockDropped = "block";
                         } else {
@@ -687,7 +801,6 @@ function mouseClicked() {
                         }
                         //blocksAPickedUp[blocksAPickedUp.length - 1].body.bounce.y = 0.2; //Sets the block bounce
                         blocksAPickedUp[blocksAPickedUp.length - 1].body.velocity.y = 100; //Sets the block gravity
-                        console.log("Block X: " + blocksA[e].blockX + " Block Y: " + blocksA[e].blockY);
                         blocksA[e].kill(); //Kills the block
                         blocksA.splice(e, 1);
                         new HUD(); //Updates the HUD
@@ -724,14 +837,14 @@ function mouseClicked() {
                         }
                         if (plantable == true) {
                             var blockInPlace = false;
-                            for(var k = 0; k < blocksA.length; k++){
-                                if(blockStartX == blocksA[k].x && blockStartY == blocksA[k].y){
+                            for (var k = 0; k < blocksA.length; k++) {
+                                if (blockStartX == blocksA[k].x && blockStartY == blocksA[k].y) {
                                     blockInPlace = true;
                                 }
                             }
                             if (player.inventory[player.handItem].Name == "treeSeed" && blockInPlace == false) {
                                 blocksA.unshift(trees.create(blockStartX, blockStartY, player.inventory[player.handItem].Name)); //Creates a new block
-                            } else if(blockInPlace == false) {
+                            } else if (blockInPlace == false) {
                                 blocksA.unshift(blocks.create(blockStartX, blockStartY, player.inventory[player.handItem].Name)); //Creates a new block
                             }
 
@@ -897,11 +1010,11 @@ function HUD() {
                     Y = 330;
                     break;
                 case 13:
-                    X = 249;
+                    X = 450;
                     Y = 330;
                     break;
                 case 14:
-                    X = 450;
+                    X = 513;
                     Y = 330;
                     break;
                 case 15:
@@ -1034,6 +1147,7 @@ function HUD() {
     }
     reDrawBar = false;
 }
+
 /***
  *
  * @param {sprite} block - This is the block the player is dragging
@@ -1043,6 +1157,7 @@ function startDrag(block) {
     startX = block.x;
     startY = block.y;
 }
+
 /***
  *
  * @param {sprite} block - This is the block the player is dragging
@@ -1050,11 +1165,12 @@ function startDrag(block) {
  */
 function stopDrag(block) {
     var loopCount = 0;
-    if(furnace.alpha == 0) {
+    var mouseX = game.input.mousePointer.x + game.camera.x; //Gets X position of mouse and adds the current camera position
+    var mouseY = game.input.mousePointer.y + game.camera.y; //Gets Y position of mouse and adds the current camera position
+    if (furnace.alpha == 0) {
         for (var e = 0; e < inventoryBar.inventory.length; e++) {
-            if (block.x > inventoryBar.inventory[e].x && block.x < inventoryBar.inventory[e].x + inventoryBar.inventory[e].width &&
-                block.y > inventoryBar.inventory[e].y && block.y < inventoryBar.inventory[e].y + inventoryBar.inventory[e].height) {
-                console.log("This collides with: " + inventoryBar.inventory[e].key);
+            if (mouseX > inventoryBar.inventory[e].x && mouseX < inventoryBar.inventory[e].x + inventoryBar.inventory[e].width &&
+                mouseY > inventoryBar.inventory[e].y && mouseY < inventoryBar.inventory[e].y + inventoryBar.inventory[e].height) {
                 //Use .number to see which position they are in the array
                 var clickedBlockData;
                 for (var i = 0; i < items.length; i++) {
@@ -1064,7 +1180,7 @@ function stopDrag(block) {
                 }
 
                 var object1Amount = player.inventory[block.number].Amount;
-                var object2Amount = player.inventory[e].Amount
+                var object2Amount = player.inventory[e].Amount;
 
                 player.inventory[block.number].Name = items[clickedBlockData].Name;
                 player.inventory[block.number].Amount = object2Amount;
@@ -1109,51 +1225,74 @@ function stopDrag(block) {
                 reDrawBar = true;
                 if (furnace.alpha == 100) {
                     new openFurnace();
-                }
-                else {
+                } else {
                     new HUD();
                 }
             }
         }
-    }
-    else{
-        console.log(block.x + ", " + block.y);
-        for(var e = 0; e < items.length; e++){
-            if(block.key == items[e].Name){
+    } else {
+        for (var e = 0; e < items.length; e++) {
+            if (block.key == items[e].Name) {
                 block.burnTime = items[e].burnTime;
                 block.fuel = items[e].fuel;
             }
         }
-        if(block.x >= furnace.x + furnace.width / 6 && block.x <= furnace.x + furnace.width / 4 && block.y >= furnace.y + furnace.height / 7 && block.y <= furnace.y + furnace.height / 3.2 && block.fuel == true){
-            console.log("Block inside fuel")
-            blocksA[blockClickedNum].fuel = block.key;
-            blocksA[blockClickedNum].burnTime = parseInt(block.burnTime * player.inventory[block.number].Amount);
-            player.inventory[block.number].Amount = 0;
-            player.inventory[block.number].Health = undefined;
-            player.inventory[block.number].MineLevel = undefined;
-            player.inventory[block.number].Name = "Null";
-            player.inventory[block.number].Placeable = undefined;
-            player.inventory[block.number].Strength = undefined;
-        }
-        else if(block.x >= furnace.x + furnace.width / 6 && block.x <= furnace.x + furnace.width / 4 && block.y >= furnace.y + furnace.height / 2.1 && block.y <= furnace.y + furnace.height / 1.56 && block.fuel == true){
-            blocksA[blockClickedNum].ingredientAmount = parseInt(player.inventory[block.number].Amount);
-            player.inventory[block.number].Amount = 0;
-            player.inventory[block.number].Health = undefined;
-            player.inventory[block.number].MineLevel = undefined;
-            player.inventory[block.number].Name = "Null";
-            player.inventory[block.number].Placeable = undefined;
-            player.inventory[block.number].Strength = undefined;
-            blocksA[blockClickedNum].ingredient = block.key;
-            blocksA[blockClickedNum].cookTime = parseInt(block.burnTime * blocksA[blockClickedNum].ingredientAmount);
-        }
-        else{
+        if (mouseX >= furnace.x + furnace.width / 6 && mouseX <= furnace.x + furnace.width / 4 && mouseY >= furnace.y + furnace.height / 7 && mouseY <= furnace.y + furnace.height / 3.2 && block.fuel == true) {
+            if (blocksA[blockClickedNum].fuel == false || blocksA[blockClickedNum].fuel == undefined) {
+                blocksA[blockClickedNum].fuel = block.key;
+                blocksA[blockClickedNum].fuelAmount = player.inventory[block.number].Amount;
+                blocksA[blockClickedNum].burnTime = parseInt(block.burnTime * player.inventory[block.number].Amount);
+                blocksA[blockClickedNum].fuelSprite = game.add.sprite(furnace.x + furnace.width / 6, furnace.y + furnace.height / 7, block.key);
+                blocksA[blockClickedNum].fuelText = game.add.text(furnace.x + furnace.width / 6, furnace.y + furnace.height / 7, blocksA[blockClickedNum].fuelAmount, style);
+                player.inventory[block.number].Amount = 0;
+                player.inventory[block.number].Health = undefined;
+                player.inventory[block.number].MineLevel = undefined;
+                player.inventory[block.number].Name = "Null";
+                player.inventory[block.number].Placeable = undefined;
+                player.inventory[block.number].Strength = undefined;
+                inventoryBar.inventory[block.number].kill();
+            } else {
+                if (block.key == blocksA[blockClickedNum].fuel) {
+                    blocksA[blockClickedNum].fuelAmount = blocksA[blockClickedNum].fuelAmount + player.inventory[block.number].Amount;
+                    blocksA[blockClickedNum].burnTime = blocksA[blockClickedNum].burnTime + (parseInt(block.burnTime * player.inventory[block.number].Amount));
+                    blocksA[blockClickedNum].fuelText.text = blocksA[blockClickedNum].fuelAmount;
+                }
+            }
+        } else if (mouseX >= furnace.x + furnace.width / 6 && mouseX <= furnace.x + furnace.width / 4 && mouseY >= furnace.y + furnace.height / 2.1 && mouseY <= furnace.y + furnace.height / 1.56 && block.fuel == true) {
+            if (blocksA[blockClickedNum].ingredient == undefined) {
+                blocksA[blockClickedNum].ingredientAmount = parseInt(player.inventory[block.number].Amount);
+                player.inventory[block.number].Amount = 0;
+                player.inventory[block.number].Health = undefined;
+                player.inventory[block.number].MineLevel = undefined;
+                player.inventory[block.number].Name = "Null";
+                player.inventory[block.number].Placeable = undefined;
+                player.inventory[block.number].Strength = undefined;
+                inventoryBar.inventory[block.number].kill();
+                blocksA[blockClickedNum].ingredient = block.key;
+                blocksA[blockClickedNum].cookTime = parseInt(block.burnTime * blocksA[blockClickedNum].ingredientAmount);
+                blocksA[blockClickedNum].ingredientSprite = game.add.sprite(furnace.x + furnace.width / 6, furnace.y + furnace.height / 2.1, block.key);
+                blocksA[blockClickedNum].ingredientSprite.scale.setTo(0.8, 0.9);
+                blocksA[blockClickedNum].ingredientText = game.add.text(furnace.x + furnace.width / 6, furnace.y + furnace.height / 2.1, blocksA[blockClickedNum].ingredientAmount, style);
+
+            } else {
+                if (block.key == blocksA[blockClickedNum].ingredient) {
+                    blocksA[blockClickedNum].ingredientAmount = blocksA[blockClickedNum].ingredientAmount + player.inventory[block.number].Amount;
+                    blocksA[blockClickedNum].cookTime = blocksA[blockClickedNum].cookTime + (parseInt(block.burnTime * player.inventory[block.number].Amount));
+                    blocksA[blockClickedNum].ingredientText.text = blocksA[blockClickedNum].ingredientAmount;
+                }
+            }
+        } else {
             for (var e = 0; e < inventoryBar.inventory.length; e++) {
-                inventoryBar.inventory[e].kill();
-                inventoryBar.inventory.splice(e, 1);
-                inventoryBarText[loopCount].text = "";
-                inventoryBarText[loopCount] = "Null";
+                if (inventoryBar.inventory[e] != undefined) {
+                    inventoryBar.inventory[e].kill();
+                    inventoryBar.inventory.splice(e, 1);
+                    e = -1;
+                }
+                if (inventoryBarText[loopCount] != null) {
+                    inventoryBarText[loopCount].text = "";
+                    inventoryBarText[loopCount] = "Null";
+                }
                 loopCount++;
-                e = -1;
             }
 
             if (furnace.alpha == 100) {
@@ -1172,67 +1311,90 @@ function crafting(first) {
     var itemClickedRequirements = [];
     var craftingIngredients = [];
     var amountToCraft;
-    for(var w = 0; w < inventory.items.length; w++){
-        if(first.key == inventory.items[w].sprite.key){
+    for (var w = 0; w < inventory.items.length; w++) {
+        if (first.key == inventory.items[w].sprite.key) {
             itemClickedRequirements = inventory.items[w].Requirements.slice(0, 9);
             amountToCraft = inventory.items[w].amountToCraft;
-            if(itemClickedRequirements.length < 9){
-                for(var p = itemClickedRequirements.length; p < 9; p++){
+            if (amountToCraft == undefined) {
+                amountToCraft = 1;
+            }
+            if (itemClickedRequirements.length < 9) {
+                for (var p = itemClickedRequirements.length; p < 9; p++) {
                     itemClickedRequirements.push(undefined)
                 }
             }
             break;
         }
     }
-    if(itemClickedRequirements != undefined){
-        for(var r = 0; r < itemClickedRequirements.length; r++){
-            for(var t = 0; t < player.inventory.length; t++) {
+    if (itemClickedRequirements != undefined) {
+        for (var r = 0; r < itemClickedRequirements.length; r++) {
+            for (var t = 0; t < player.inventory.length; t++) {
                 if (player.inventory[t].Name == itemClickedRequirements[r]) {
                     itemClickedRequirements[r] = undefined;
                     craftingIngredients.push(t);
                 }
-                if(r == itemClickedRequirements.length - 1){
-                    if(itemClickedRequirements[0] == undefined && itemClickedRequirements[1] == undefined
-                        && itemClickedRequirements[2] == undefined && itemClickedRequirements[3] == undefined
-                        && itemClickedRequirements[4] == undefined && itemClickedRequirements[5] == undefined
-                        && itemClickedRequirements[6] == undefined && itemClickedRequirements[7] == undefined
-                        && itemClickedRequirements[8] == undefined){
-                        if(craftingIngredients.length < 9){
-                            do{
+                if (r == itemClickedRequirements.length - 1) {
+                    if (itemClickedRequirements[0] == undefined && itemClickedRequirements[1] == undefined && itemClickedRequirements[2] == undefined && itemClickedRequirements[3] == undefined && itemClickedRequirements[4] == undefined && itemClickedRequirements[5] == undefined && itemClickedRequirements[6] == undefined && itemClickedRequirements[7] == undefined && itemClickedRequirements[8] == undefined) {
+                        if (craftingIngredients.length < 9) {
+                            do {
                                 craftingIngredients.push(undefined);
-                            }while(craftingIngredients.length < 9)
+                            } while (craftingIngredients.length < 9)
 
                         }
-                        if((craftingIngredients[0] == undefined || player.inventory[craftingIngredients[0]].Amount > 0)
-                            && (craftingIngredients[1] == undefined || player.inventory[craftingIngredients[1]].Amount > 0)
-                            && (craftingIngredients[2] == undefined || player.inventory[craftingIngredients[2]].Amount > 0)
-                            && (craftingIngredients[3] == undefined || player.inventory[craftingIngredients[3]].Amount > 0)
-                            && (craftingIngredients[4] == undefined || player.inventory[craftingIngredients[4]].Amount > 0)
-                            && (craftingIngredients[5] == undefined || player.inventory[craftingIngredients[5]].Amount > 0)
-                            && (craftingIngredients[6] == undefined || player.inventory[craftingIngredients[6]].Amount > 0)
-                            && (craftingIngredients[7] == undefined || player.inventory[craftingIngredients[7]].Amount > 0)
-                            && (craftingIngredients[8] == undefined || player.inventory[craftingIngredients[8]].Amount > 0)){
-                            for(var y = 0; y < craftingIngredients.length; y++){
-                                if(craftingIngredients[y] != undefined){
-                                    player.inventory[craftingIngredients[y]].Amount--;
-                                    inventoryBarText[craftingIngredients[y]].text = player.inventory[craftingIngredients[y]].Amount;
-                                    if(player.inventory[craftingIngredients[y]].Amount <= 0){
-                                        inventoryBar.inventory[craftingIngredients[y]].kill();
-                                        player.inventory[craftingIngredients[y]] =({
-                                            Name: "Null",
-                                            MineLevel: 0,
-                                            Health: 0,
-                                            Amount: 0
+                        var craftingAmount = [];
+                        for (var e = 0; e < craftingIngredients.length; e++) {
+                            if (craftingIngredients[e] != undefined && craftingAmount.length == 0) {
+                                craftingAmount.push({
+                                    Number: craftingIngredients[e],
+                                    Amount: 1
+                                });
+                            } else {
+                                for (var i = 0; i < craftingAmount.length; i++) {
+                                    if (craftingAmount[i].Number == craftingIngredients[e]) {
+                                        craftingAmount[i].Amount++;
+                                    } else if (i == craftingAmount.length - 1 && craftingIngredients[e] != undefined) {
+                                        craftingAmount.push({
+                                            Number: craftingIngredients[e],
+                                            Amount: 1
                                         });
+                                        break;
                                     }
                                 }
-                                if(y == craftingIngredients.length - 1){
-                                            blocksAPickedUp[blocksAPickedUp.length] = blocksPickedUp.create(player.body.x, player.body.y, first.key);
+                            }
+
+                        }
+                        for (var t = 0; t < craftingIngredients.length; t++) {
+                            for (var p = 0; p < craftingAmount.length; p++) {
+                                if (craftingIngredients != undefined || player.inventory[craftingIngredients[t]].Amount >= craftingAmount[p].Amount) {
+
+                                } else if (craftingIngredients == undefined || player.inventory[craftingIngredients[t]].Amount <= craftingAmount[p].Amount) {
+                                    break;
+                                }
+                                if (t == craftingIngredients.length - 1) {
+                                    for (var y = 0; y < craftingIngredients.length; y++) {
+                                        if (craftingIngredients[y] != undefined) {
+                                            player.inventory[craftingIngredients[y]].Amount--;
+                                            inventoryBarText[craftingIngredients[y]].text = player.inventory[craftingIngredients[y]].Amount;
+                                            if (player.inventory[craftingIngredients[y]].Amount <= 0) {
+                                                inventoryBar.inventory[craftingIngredients[y]].kill();
+                                                player.inventory[craftingIngredients[y]] = ({
+                                                    Name: "Null",
+                                                    MineLevel: 0,
+                                                    Health: 0,
+                                                    Amount: 0
+                                                });
+                                            }
+                                        }
+                                        if (y == craftingIngredients.length - 1) {
+                                            blocksAPickedUp[blocksAPickedUp.length] = blocksPickedUp.create(player.body.x, player.body.y - 30, first.key);
                                             blocksAPickedUp[blocksAPickedUp.length - 1].amountToCraft = amountToCraft;
                                             blocksAPickedUp[blocksAPickedUp.length - 1].scale.setTo(.2, .2);
+                                            break;
+                                        }
+                                    }
+                                    break;
                                 }
                             }
-                            console.log("Can craft");
                         }
                         break;
                     }
@@ -1257,10 +1419,9 @@ function pickUpItems(first, second) {
     }
     for (var o = 0; o < player.inventory.length; o++) { //Loops through player inventory to check if item already there
         if (player.inventory[o].Name == items[item].Name) { //If item is already there
-            if(second.amountToCraft != undefined) {
+            if (second.amountToCraft != undefined) {
                 player.inventory[o].Amount += second.amountToCraft; //Add one to item if in inventory
-            }
-            else{
+            } else {
                 player.inventory[o].Amount++;
             }
             second.kill(); //This kills the dropped block
@@ -1274,11 +1435,11 @@ function pickUpItems(first, second) {
                     player.inventory[e].Placeable = items[item].Placeable;
                     player.inventory[e].burnTime = items[item].burnTime;
                     player.inventory[e].fuel = items[item].fuel;
+                    player.inventory[e].Health = items[item].Health;
                     if (player.inventory[e].Amount == 0) {
-                        if(second.amountToCraft != undefined) {
+                        if (second.amountToCraft != undefined) {
                             player.inventory[e].Amount += second.amountToCraft; //Add one to item if in inventory
-                        }
-                        else{
+                        } else {
                             player.inventory[e].Amount++;
                         }
                     }
@@ -1292,10 +1453,269 @@ function pickUpItems(first, second) {
 }
 
 /**
+ * This deals with the player taking damage
+ * @param first {Sprite} - This is the players sprite
+ * @param second {Sprite} - This is the fireball sprite
+ * @constructor
+ */
+function playerDamage(first, second) {
+    player.health -= 10;
+    second.kill();
+}
+
+/**
+ * This deals with the enemies attacks hitting blocks
+ * @param first {Sprite} - This is a block sprite
+ * @param second {Sprite} - This is a fireball sprite
+ * @constructor
+ */
+function blockDamage(first, second) {
+    first.Health--;
+    second.kill();
+    if (first.Health <= 0) {
+        first.kill();
+    }
+}
+
+/**
+ * This deals with enemies hitting each other
+ * @param first {Sprite} - This is the enemy that was hit
+ * @param second {Sprite} - This is a fireball sprite
+ * @constructor
+ */
+function enemyDamage(first, second) {
+    second.kill();
+    first.Health -= 2;
+}
+
+/**
+ * This is where the enemy is damaged by the player
+ * @param first
+ * @constructor
+ */
+function enemyClicked(first) {
+    if (player.inventory[player.handItem].Name == "Wood Sword" || player.inventory[player.handItem].Name == "Iron Sword" || player.inventory[player.handItem].Name == "Silver Sword" || player.inventory[player.handItem].Name == "Gold Sword" || player.inventory[player.handItem].Name == "Diamond Sword") {
+        first.Health -= 3;
+        player.inventory[player.handItem].Health--;
+        if (player.inventory[player.handItem].Health <= 0) {
+            if (player.inventory[player.handItem].Amount > 1) {
+                player.inventory[player.handItem].Amount--;
+                for (var e = 0; e < items.length; e++) {
+                    if (player.inventory[player.handItem].Name == items[e].Name) {
+                        player.inventory[player.handItem].Health = items[e].Health;
+                        break;
+                    }
+                }
+                new HUD();
+            } else if (player.inventory[player.handItem].Name != "Null" && player.inventory[player.handItem].Amount == 1) {
+                player.inventory[player.handItem].Amount--;
+                player.inventory[player.handItem].MineLevel = 0;
+                player.MineLevel = 1;
+                new HUD();
+            }
+        }
+    } else {
+        first.Health--;
+    }
+
+    if (first.Health <= 0) {
+        first.kill();
+    }
+}
+
+/**
+ * This is where the enemy actions are decided
+ * @constructor
+ */
+function controlEnemies() {
+    for (var e = 0; e < enemies.length; e++) {
+        var blockInWay = false;
+        enemies[e].Sprite.body.y = 420;
+        for (var i = 0; i < blocksA.length; i++) {
+            if (enemies[e].Direction == "Left" && (blocksA[i].y == enemies[e].Sprite.body.y || blocksA[i].y == enemies[e].Sprite.body.y - 70 ||
+                    blocksA[i].y == enemies[e].Sprite.body.y) && (blocksA[i].x > enemies[e].Sprite.body.x - 140 && blocksA[i].x < enemies[e].Sprite.body.x - 70) && (blocksA[i].key != "tree" && blocksA[i].key != "leaf")) {
+                blockInWay = true;
+                break;
+            }
+            if (enemies[e].Direction == "Right" && (blocksA[i].y == enemies[e].Sprite.body.y || blocksA[i].y == enemies[e].Sprite.body.y - 70 ||
+                    blocksA[i].y == enemies[e].Sprite.body.y) && (blocksA[i].x < enemies[e].Sprite.body.x + 140 && blocksA[i].x > enemies[e].Sprite.body.x + 70) && (blocksA[i].key != "tree" && blocksA[i].key != "leaf")) {
+                blockInWay = true;
+                break;
+            }
+        }
+        enemies[e].spriteChange--;
+        //Checks if player is in range
+        if (enemies[e].Sprite.body.x <= player.body.x + 300 && enemies[e].Direction == "Left") {
+            enemies[e].inRange = true;
+            enemies[e].Sprite.body.velocity.x = 0;
+        } else if (enemies[e].inRange && enemies[e].Direction == "Left") {
+            enemies[e].inRange = false;
+        }
+
+        if (enemies[e].Sprite.body.x >= player.body.x - 300 && enemies[e].Direction == "Right") {
+            enemies[e].inRange = true;
+            enemies[e].Sprite.body.velocity.x = 0;
+        } else if (enemies[e].inRange && enemies[e].Direction == "Right") {
+            enemies[e].inRange = false;
+        }
+
+        if (enemies[e].Direction == "Left" && player.body.x > enemies[e].Sprite.body.x) {
+            enemies[e].Direction = "Right";
+            enemies[e].Sprite.scale.x *= -1;
+        }
+        if (enemies[e].Direction == "Right" && player.body.x < enemies[e].Sprite.body.x) {
+            enemies[e].Direction = "Left";
+            enemies[e].Sprite.scale.x *= -1;
+        }
+
+        //Attacks
+        if (enemies[e].inRange || blockInWay) {
+            if (enemies[e].attackTime <= 0 && enemies[e].attack == undefined) {
+                enemies[e].attack = attackG.create(enemies[e].Sprite.x, enemies[e].Sprite.y, "fireball");
+                enemies[e].attackTime = 240;
+                if (enemies[e].Direction == "Right") {
+                    enemies[e].attack.body.velocity.x = 50;
+                    enemies[e].attack.scale.x *= -1;
+                } else {
+                    enemies[e].attack.body.velocity.x = -50;
+                }
+            } else {
+                enemies[e].attackTime--;
+            }
+        }
+
+        if (enemies[e].attack != undefined && enemies[e].attack.alive == false) {
+            enemies[e].attack = undefined;
+        }
+
+        if (enemies[e].attack != undefined) {
+            if (enemies[e].attack.x) {
+
+            }
+        }
+
+        //Movement
+        if (enemies[e].Direction == "Left" && enemies[e].inRange == false && !blockInWay) {
+            enemies[e].Sprite.body.velocity.x = -50;
+        } else if (enemies[e].Direction == "Right" && enemies[e].inRange == false && !blockInWay) {
+            enemies[e].Sprite.body.velocity.x = 50;
+        } else {
+            enemies[e].Sprite.body.velocity.x = 0;
+        }
+
+        //Sprite Change
+        if (enemies[e].Sprite.key == "fly1" && enemies[e].spriteChange <= 0) {
+            enemies[e].Sprite.loadTexture("fly2");
+            enemies[e].spriteChange = 10;
+        } else if (enemies[e].Sprite.key == "fly2" && enemies[e].spriteChange <= 0) {
+            enemies[e].Sprite.loadTexture("fly1");
+            enemies[e].spriteChange = 10;
+        }
+
+        //Deals with damage
+        if (enemies[e].Sprite.Health <= 0) {
+            enemies.splice(e, 1);
+        }
+    }
+}
+
+/**
+ * This handles the firballs hitting each other, this is used to help stop the enemies kill each other
+ * @param first {Sprite} - This is a fireball sprite
+ * @param second {Sprite} - This is a fireball sprite
+ * @constructor
+ */
+function fireballDamage(first, second) {
+    first.kill();
+    second.kill();
+}
+
+/**
  * This is the main update function.
  * @constructor
  */
 function update() {
+    //Start of sun movement
+    var screenWidth;
+    if (time > 60) {
+        if (sun.key == "sun") {
+            screenWidth = window.innerWidth / 120;
+        } else {
+            screenWidth = window.innerWidth / 60;
+        }
+        time = 0;
+        sun.cameraOffset.x += screenWidth;
+    } else {
+        time++;
+    }
+    sun.cameraOffset.y = 100 - game.camera.y;
+    if (sun.cameraOffset.x >= game.camera.width) {
+        sun.cameraOffset.x = 0;
+        if (sun.timeFrame == "Day") {
+            sun.loadTexture("moon");
+            sun.timeFrame = "Night";
+        } else {
+            sun.loadTexture("sun");
+            sun.timeFrame = "Day";
+        }
+    }
+    //End of sun movement
+
+    //Start of enemies
+    if (lastEnemy <= 0 && sun.key != "sun") {
+        lastEnemy = Math.floor(Math.random() * (1000 - 1) + 1);
+        var direction = Math.floor(Math.random() * (3 - 1) + 1);
+        var X;
+        var Y = 420;
+
+        if (direction == 1) {
+            direction = "Left";
+            X = window.innerWidth + game.camera.x;
+        } else {
+            direction = "Right";
+            X = 0 + game.camera.x;
+        }
+        enemies.push({
+            Direction: direction,
+            spriteChange: 10,
+            inRange: false,
+            attack: undefined,
+            attackTime: 60,
+            Sprite: enemiesG.create(X, Y, "fly1")
+        });
+        enemies[enemies.length - 1].Sprite.inputEnabled = true;
+        enemies[enemies.length - 1].Sprite.Health = 10;
+        enemies[enemies.length - 1].Sprite.events.onInputDown.add(enemyClicked, this);
+        enemies[enemies.length - 1].Sprite.anchor.setTo(.5, .5);
+        if (direction == "Right") {
+            enemies[enemies.length - 1].Sprite.scale.x *= -1;
+        }
+    } else {
+        lastEnemy--;
+    }
+    if (enemies.length > 0) {
+        controlEnemies();
+    }
+    //End of enemies
+
+    //Start of Health HUD update
+    for (var e = 0; e < healthIcons.length; e++) {
+        if (player.health >= e * 10 + 10) {
+            healthIcons[e].loadTexture("fullHeart");
+        } else if (player.health <= (e * 10 + 5) && player.health > (e * 10)) {
+            healthIcons[e].loadTexture("halfHeart");
+        } else if (player.health <= e * 10) {
+            healthIcons[e].loadTexture("emptyHeart");
+        }
+    }
+    if (player.health <= 0) {
+        player.body.x = player.spawnX;
+        player.body.y = player.spawnY;
+        player.health = 100;
+    }
+
+    //End of health HUD update
+
     //Start of text update
     for (var e = 0; e < inventoryBarText.length; e++) {
         if (player.inventory[e].Amount > 0) {
@@ -1306,25 +1726,23 @@ function update() {
         }
     }
 
-    if(save != undefined && save.alive != false && save.input.pointerOver()){
-            toolTip.x = save.x;
-            toolTip.y = save.y + 50;
-            toolTip.text = "Save current level";
-            game.world.bringToTop(toolTip);
-    }
-    else if(trash != undefined && trash.alive != false && trash.input.pointerOver()){
-            toolTip.x = trash.x;
-            toolTip.y = trash.y + 50;
-            toolTip.text = "Delete current save";
-            game.world.bringToTop(toolTip);
-    }
-    else{
+    if (save != undefined && save.alive != false && save.input.pointerOver()) {
+        toolTip.x = save.x;
+        toolTip.y = save.y + 50;
+        toolTip.text = "Save current level";
+        game.world.bringToTop(toolTip);
+    } else if (trash != undefined && trash.alive != false && trash.input.pointerOver()) {
+        toolTip.x = trash.x;
+        toolTip.y = trash.y + 50;
+        toolTip.text = "Delete current save";
+        game.world.bringToTop(toolTip);
+    } else {
         toolTip.x = -200;
         toolTip.y = -200;
         toolTip.text = "";
     }
-    for(var l = 0; l < inventory.items.length; l ++) {
-        if(inventory.items[l].sprite.input.pointerOver()){
+    for (var l = 0; l < inventory.items.length; l++) {
+        if (inventory.items[l].sprite.input.pointerOver()) {
             toolTip.x = inventory.items[l].sprite.x;
             toolTip.y = inventory.items[l].sprite.y + 65;
             toolTip.text = inventory.items[l].sprite.key;
@@ -1337,7 +1755,11 @@ function update() {
     if (game.camera.y > 500) {
         bg.loadTexture("bgBelow");
     } else {
-        bg.loadTexture("bgAbove");
+        if (sun.key == "moon") {
+            bg.loadTexture("night");
+        } else {
+            bg.loadTexture("bgAbove");
+        }
     }
     //End of background change
     //Start of blocks velocity
@@ -1354,45 +1776,177 @@ function update() {
     game.physics.arcade.collide(player, blocks); //This is the collision between blocks and players
     game.physics.arcade.collide(blocks, blocksPickedUp); //This is the collision between blocks and dropped blocks
     game.physics.arcade.collide(player, blocksPickedUp, pickUpItems); //This is the collision between blocks and dropped blocks
+    game.physics.arcade.collide(player, attackG, playerDamage);
+    game.physics.arcade.collide(blocks, attackG, blockDamage);
+    game.physics.arcade.collide(enemiesG, attackG, enemyDamage);
+    game.physics.arcade.collide(attackG, attackG, fireballDamage);
     //End of collision
     //Start of tree growth
     for (var e = 0; e < blocksA.length; e++) {
-        if(blocksA[e].key == "Furnace"){
-            if(blocksA[e].fuel != undefined && blocksA[e].ingredient != undefined){
-                if(blocksA[e].burnTime > 0 && blocksA[e].cookTime != undefined){
+        if (blocksA[e].key == "Furnace") {
+            if (blocksA[e].fuel != undefined && blocksA[e].ingredient != undefined) {
+                if (blocksA[e].burnTime > 0 && blocksA[e].cookTime != undefined) {
                     blocksA[e].burnTime--;
                     blocksA[e].cookTime--;
                 }
-                if(blocksA[e].cookTime <= 0){
+                if (blocksA[e].cookTime <= 0) {
                     var itemToPlace;
-                    if(blocksA[e].ingredient == "iron_block"){
+                    if (blocksA[e].ingredient == "iron_block") {
                         itemToPlace = "iron_ore";
                     }
-                    if(blocksA[e].ingredient == "silver_block"){
+                    if (blocksA[e].ingredient == "silver_block") {
                         itemToPlace = "silver_ore";
                     }
-                    if(blocksA[e].ingredient == "gold_block"){
+                    if (blocksA[e].ingredient == "gold_block") {
                         itemToPlace = "gold_ore";
                     }
-                    if(blocksA[e].ingredient == "diamond_block"){
+                    if (blocksA[e].ingredient == "diamond_block") {
                         itemToPlace = "diamond_ore";
                     }
                     blocksA[e].ingredient = undefined;
-                    for(var f = 0; f <= blocksA[e].ingredientAmount; f++) {
+                    for (var f = 0; f < blocksA[e].ingredientAmount; f++) {
                         blocksAPickedUp[blocksAPickedUp.length] = blocksPickedUp.create(blocksA[e].body.x, blocksA[e].body.y - 50, itemToPlace);
                         blocksAPickedUp[blocksAPickedUp.length - 1].scale.setTo(.4, .4);
                     }
-                    console.log("item has cooked");
+                    blocksA[e].fuelSprite.alpha = 0;
+                    blocksA[e].fuelSprite = undefined;
+                    blocksA[e].ingredientSprite.alpha = 0;
+                    blocksA[e].ingredientSprite = undefined;
+                    blocksA[e].ingredientText.text = "";
+                    blocksA[e].fuelText.text = "";
+                    blocksA[blockClickedNum].fuel = undefined;
+                    blocksA[blockClickedNum].ingredient = undefined;
                 }
             }
         }
+        var treeGrowthPossible = true;
         if (blocksA[e].key == "treeSeed") {
+            for (var i = 0; i < blocksA.length; i++) {
+                if (blocksA[i].body.y < blocksA[e].body.y && (blocksA[i].body.x < blocksA[e].body.x + 280 && blocksA[i].body.x > blocksA[e].body.x - 280)) {
+                    treeGrowthPossible = false;
+                    break;
+                }
+                if (i == blocksA.length - 1 && blocksA[e].growTime == 0) {
+                    var g = blocksA[e].x;
+                    var treeHeight = Math.floor(Math.random() * (6 - 3) + 3);
+                    for (var q = 0; q < treeHeight; q++) {
+                        blocksA[blocksA.length] = trees.create(g, 420 - (q * 70), 'tree'); //Creates a new block
+                        blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                        blocksA[blocksA.length - 1].blockX = e / 70;
+                        blocksA[blocksA.length - 1].blockY = 420 - (q * 70);
+                        tree = false;
+                        blocksA[blocksA.length - 1].MineLevel = items[10].MineLevel;
+                        blocksA[blocksA.length - 1].Health = items[10].Health;
+
+                        if (q == treeHeight - 1) {
+                            //bottom layer
+                            blocksA[blocksA.length] = trees.create(g - 70, 420 - (q * 70), 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g - 70 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+                            blocksA[blocksA.length] = trees.create(g - 140, 420 - (q * 70), 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g - 140 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+                            blocksA[blocksA.length] = trees.create(g - 210, 420 - (q * 70), 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g - 210 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+                            blocksA[blocksA.length] = trees.create(g + 70, 420 - (q * 70), 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g + 70 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+                            blocksA[blocksA.length] = trees.create(g + 140, 420 - (q * 70), 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g + 140 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+                            blocksA[blocksA.length] = trees.create(g + 210, 420 - (q * 70), 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g + 210 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+                            //second layer
+                            blocksA[blocksA.length] = trees.create(g - 70, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g + 140 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+                            blocksA[blocksA.length] = trees.create(g - 140, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g + 140 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+                            blocksA[blocksA.length] = trees.create(g + 70, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g + 140 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+                            blocksA[blocksA.length] = trees.create(g + 140, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g + 140 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+
+                            blocksA[blocksA.length] = trees.create(g, 420 - (q * 70) - 70, 'tree'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g + 210 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            blocksA[blocksA.length - 1].MineLevel = items[10].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[10].Health;
+                            //Third layer
+                            blocksA[blocksA.length] = trees.create(g + 70, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g + 140 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+                            blocksA[blocksA.length] = trees.create(g - 70, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g + 140 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+                            blocksA[blocksA.length] = trees.create(g, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g + 210 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+
+                            //fourth layer
+                            blocksA[blocksA.length] = trees.create(g, 420 - (q * 70) - 210, 'leaf'); //Creates a new block
+                            blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
+                            blocksA[blocksA.length - 1].blockX = g + 140 / 70;
+                            blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
+                            tree = false;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].Health = items[11].Health;
+                        }
+                    }
+                }
+            }
             if (blocksA[e].growTime <= 0) {
                 blocksA[e].kill();
                 blocksA.splice(e, 1);
             } else {
-                var randomNum = Math.floor(Math.random() * (10 - 1) + 1);
-                if (randomNum == 3) {
+                var randomNum = Math.floor(Math.random() * (30 - 1) + 1);
+                if (randomNum == 3 && treeGrowthPossible == true) {
                     blocksA[e].growTime--;
                 }
             }
@@ -1402,23 +1956,27 @@ function update() {
     //Start of ground generation
     var furthestBlock = 0;
     for (var e = 0; e < blocksA.length; e++) {
-        if (blocksA[e].x > furthestBlock) {
+        if (blocksA[e].x > furthestBlock && blocksA[e].key != "leaf") {
             furthestBlock = blocksA[e].x
         }
     }
     if (blocksA.length == 0 || furthestBlock < player.body.x + 1000) { //Checks if last block is less than 1000 away
         if (blocksA.length != 0) {
             var first = 0;
-            var blockNumber;
+            var blockNumber = 0;
             for (var e = 0; e < blocksA.length; e++) {
-                if (blocksA[e].x > first) {
+                if (blocksA[e].x > first && blocksA[e].key != "leaf") {
                     first = blocksA[e].x;
                     blockNumber = e;
                 }
             }
             var lastX = blocksA[blockNumber].x; //Stores the last block co-ordinates
+            if (lastX == 0) {
+                lastX = -70;
+            }
+
         } else {
-            var lastX = -70; //This is used if there is no blocks on screen
+            lastX = -70; //This is used if there is no blocks on screen
         }
 
         for (var e = lastX + 70; e < lastX + 2000; e += 70) { //Changes the X value for the loop
@@ -1429,7 +1987,6 @@ function update() {
                 if (blockKeyData.length == 0) {
                     tree = true;
                     lastTree = e;
-                    console.log(lastTree);
                 }
             }
             for (var i = 490; i <= 4000; i += 70) { //Changes the Y value for the loop
@@ -1441,7 +1998,7 @@ function update() {
                     blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
                     for (var j = 0; j < items.length; j++) {
                         if (items[j].Name == blocksA[blocksA.length - 1].key) {
-                            blocksA[blocksA.length - 1].MineLevel  = items[j].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[j].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[j].Health;
                         }
                     }
@@ -1450,28 +2007,40 @@ function update() {
                     blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                     blocksA[blocksA.length - 1].blockX = blocksA[blocksA.length - 1].body.x / 70;
                     blocksA[blocksA.length - 1].blockY = blocksA[blocksA.length - 1].body.y / 70;
-                    if(blockKeyData.length > 0){
-                        if(blockKeyData[0].Name == "unbreakable"){
+                    if (blockKeyData.length > 0) {
+                        if (blockKeyData[0].Name == "unbreakable") {
                             blockKeyData.splice(0, 1);
                         }
                     }
                 } else {
-                    if(blockKeyData.length > 0){
+                    if (blockKeyData.length > 0) {
                         var finalE;
-                        for(var p = 0; p < blockKeyData.length; p++){
-                            if(blockKeyData[p].Name != "tree" && blockKeyData[p].Name == "leaf"){
+                        var finalI;
+                        for (var p = 0; p < blockKeyData.length; p++) {
+                            if (blockKeyData[p].Name != "tree" && blockKeyData[p].Name == "leaf") {
                                 finalE = blockKeyData[p].X;
+                                finalI = blockKeyData[p].Y;
+                            } else {
+                                finalE = undefined;
+                                finalI = undefined;
                             }
-                            if(blockKeyData[p].Name == "unbreakable"){
+                            if (blockKeyData[p].Name == "unbreakable") {
                                 blockKeyData.splice(0, 1);
                             }
-                            groundGen(e,i);
+                            new groundGen(e, i);
+                            if (finalE != undefined) {
+                                i -= 70;
+                            }
+                            i += 70;
+                            if (i > 4000) {
+                                i = 490;
+                                e += 70;
+                            }
                             p = 0;
                         }
-                        e = finalE;
-
+                        e = finalE + 70;
                     } else {
-                        groundGen(e, i);
+                        new groundGen(e, i);
                     }
                 }
                 if (tree == true && blockKeyData.length == 0) {
@@ -1481,7 +2050,7 @@ function update() {
                         blocksA[blocksA.length - 1].blockX = e / 70;
                         blocksA[blocksA.length - 1].blockY = 420 - (q * 70);
                         tree = false;
-                        blocksA[blocksA.length - 1].MineLevel  = items[10].MineLevel;
+                        blocksA[blocksA.length - 1].MineLevel = items[10].MineLevel;
                         blocksA[blocksA.length - 1].Health = items[10].Health;
 
                         if (q == treeHeight - 1) {
@@ -1490,89 +2059,89 @@ function update() {
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e - 70 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e - 140, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e - 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e - 210, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e - 210 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e + 70, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 70 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e + 140, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e + 210, 420 - (q * 70), 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 210 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             //second layer
                             blocksA[blocksA.length] = trees.create(e - 70, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e - 140, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e + 70, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e + 140, 420 - (q * 70) - 70, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
 
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
 
                             blocksA[blocksA.length] = trees.create(e, 420 - (q * 70) - 70, 'tree'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 210 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel  = items[10].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[10].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[10].Health;
                             //Third layer
                             blocksA[blocksA.length] = trees.create(e + 70, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e - 70, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                             blocksA[blocksA.length] = trees.create(e, 420 - (q * 70) - 140, 'leaf'); //Creates a new block
                             blocksA[blocksA.length - 1].body.immovable = true; //Makes the block immovable
                             blocksA[blocksA.length - 1].blockX = e + 210 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
 
                             //fourth layer
@@ -1581,32 +2150,28 @@ function update() {
                             blocksA[blocksA.length - 1].blockX = e + 140 / 70;
                             blocksA[blocksA.length - 1].blockY = 420 - (q * 70) / 70;
                             tree = false;
-                            blocksA[blocksA.length - 1].MineLevel  = items[11].MineLevel;
+                            blocksA[blocksA.length - 1].MineLevel = items[11].MineLevel;
                             blocksA[blocksA.length - 1].Health = items[11].Health;
                         }
                     }
                 }
-
             }
         }
     }
     //End of ground generation
     //Start of performance improvement
-    var starting = null,
-        ending = null;
     for (var e = 0; e < blocksA.length; e++) {
         if (blocksA[e].body.x < (player.body.x - 1400)) {
             chunks.unshift(blocksA[e]);
             blocksA[e].kill();
             blocksA.splice(e, 1);
-            e=0;
+            e = 0;
         }
     }
-    starting = null, ending = null;
     if (player.body.velocity.x < 0) {
         for (var e = 0; e < chunks.length; e++) {
             if (chunks[e].body.x > (player.body.x - 1400)) {
-                if(chunks[e].key == "tree" || chunks[e].key == "leaf"){
+                if (chunks[e].key == "tree" || chunks[e].key == "leaf") {
                     blocksA.unshift(trees.create(chunks[e].body.x, chunks[e].body.y, chunks[e].key));
                 } else {
                     blocksA.unshift(blocks.create(chunks[e].body.x, chunks[e].body.y, chunks[e].key));
@@ -1616,9 +2181,6 @@ function update() {
                 blocksA[0].blockY = chunks[e].body.y / 70;
                 for (var j = 0; j < items.length; j++) {
                     if (items[j].Name == blocksA[0].key) {
-                        if (blocksA[blocksA.length - 1].key == "stone") {
-                            console.log("");
-                        }
                         blocksA[0].MineLevel = items[j].MineLevel;
                         blocksA[0].Health = items[j].Health;
                     }
@@ -1760,14 +2322,11 @@ function groundGen(e, i) {
         }
         for (var j = 0; j < items.length; j++) {
             if (items[j].Name == blocksA[blocksA.length - 1].key) {
-                blocksA[blocksA.length - 1].MineLevel  = items[j].MineLevel;
+                blocksA[blocksA.length - 1].MineLevel = items[j].MineLevel;
                 blocksA[blocksA.length - 1].Health = items[j].Health;
             }
         }
     } else if (blockKeyData.length > 0) {
-        if(blockKeyData[0].X == 284){
-            console.log("");
-        }
         if (blockKeyData[0].Name != "leaf") {
             if (blockKeyData[0].Name != "tree") {
                 e = parseInt(blockKeyData[0].X);
@@ -1780,12 +2339,11 @@ function groundGen(e, i) {
 
                 for (var j = 0; j < items.length; j++) {
                     if (items[j].Name == blocksA[blocksA.length - 1].key) {
-                        blocksA[blocksA.length - 1].MineLevel  = items[j].MineLevel;
+                        blocksA[blocksA.length - 1].MineLevel = items[j].MineLevel;
                         blocksA[blocksA.length - 1].Health = items[j].Health;
                     }
                 }
-            }
-            else{
+            } else {
                 e = parseInt(blockKeyData[0].X);
                 i = parseInt(blockKeyData[0].Y);
                 blocksA[blocksA.length] = trees.create(e, i, blockKeyData[0].Name); //Creates a new block
@@ -1796,7 +2354,7 @@ function groundGen(e, i) {
 
                 for (var j = 0; j < items.length; j++) {
                     if (items[j].Name == blocksA[blocksA.length - 1].key) {
-                        blocksA[blocksA.length - 1].MineLevel  = items[j].MineLevel;
+                        blocksA[blocksA.length - 1].MineLevel = items[j].MineLevel;
                         blocksA[blocksA.length - 1].Health = items[j].Health;
                     }
                 }
@@ -1811,7 +2369,7 @@ function groundGen(e, i) {
             blockKeyData.splice(0, 1);
             for (var j = 0; j < items.length; j++) {
                 if (items[j].Name == blocksA[blocksA.length - 1].key) {
-                    blocksA[blocksA.length - 1].MineLevel  = items[j].MineLevel;
+                    blocksA[blocksA.length - 1].MineLevel = items[j].MineLevel;
                     blocksA[blocksA.length - 1].Health = items[j].Health;
                 }
             }
@@ -1824,7 +2382,7 @@ function groundGen(e, i) {
  * @constructor
  */
 function controlInventoryScreen() {
-    if(inventoryControls == null){
+    if (inventoryControls == null) {
         return;
     }
     for (var e = 0; e < 9; e++) {
@@ -1923,8 +2481,6 @@ function controlInventoryScreen() {
                     inventory.items.crafting[i].fixedToCamera = true;
                 }
             }
-            craftingKilled = true;
-            console.log(inventory.items[e].sprite.key);
         } else if (inventory.items[e].Tab == inventory.currentTab && inventory.items[e].Row != inventory.currentRow && inventory.items[e].RowNumber == 0 && inventory.items[e].craftingSlots <= inventoryType) {
             inventory.items[e].sprite.visible = true;
         }
@@ -1940,149 +2496,160 @@ function controlInventoryScreen() {
  * @constructor
  */
 function openFurnace() {
-    save = game.add.sprite(0, 0, 'save');
-    save.inputEnabled = true;
-    save.events.onInputDown.add(upload, this);
-    save.fixedToCamera = true;
+    if (blocksA[blockClickedNum].fuelSprite != undefined) {
+        blocksA[blockClickedNum].fuelSprite.alpha = 100;
+        blocksA[blockClickedNum].fuelText.text = blocksA[blockClickedNum].fuelAmount;
+    }
+    if (blocksA[blockClickedNum].ingredientSprite != undefined) {
+        blocksA[blockClickedNum].ingredientSprite.alpha = 100;
+        blocksA[blockClickedNum].ingredientText.text = blocksA[blockClickedNum].ingredientAmount;
+    }
+    if (save == undefined || save.alive == false) {
+        save = game.add.sprite(0, 0, 'save');
+        save.inputEnabled = true;
+        save.events.onInputDown.add(upload, this);
+        save.fixedToCamera = true;
 
-    trash = game.add.sprite(0 + save.width, 0, 'trash');
-    trash.inputEnabled = true;
-    trash.events.onInputDown.add(clearLevel, this);
-    trash.fixedToCamera = true;
+        trash = game.add.sprite(0 + save.width, 0, 'trash');
+        trash.inputEnabled = true;
+        trash.events.onInputDown.add(clearLevel, this);
+        trash.fixedToCamera = true;
+    }
     reDrawBar = true;
     inventoryBarHighlighter.visible = false;
-    console.log("Furnace");
     var X = 0;
     var Y = 10;
-    for(var e = 0; e < 30; e++) {
-        var itemName = {Name: "Null"};
+    for (var e = 0; e < 30; e++) {
+        var itemName = {
+            Name: "Null"
+        };
         if (furnace.visible == true) {
             if (player.inventory[e].Name != "Null") {
                 itemName = player.inventory[e];
                 switch (e) {
-                    case 0:
-                        X = 259;
-                        Y = 245;
-                        break;
-                    case 1:
-                        X = 322;
-                        Y = 245;
-                        break;
-                    case 2:
-                        X = 387;
-                        Y = 245;
-                        break;
-                    case 3:
-                        X = 450;
-                        Y = 245;
-                        break;
-                    case 4:
-                        X = 513;
-                        Y = 245;
-                        break;
-                    case 5:
-                        X = 578;
-                        Y = 245;
-                        break;
-                    case 6:
-                        X = 641;
-                        Y = 245;
-                        break;
-                    case 7:
-                        X = 705;
-                        Y = 245;
-                        break;
-                    case 8:
-                        X = 768;
-                        Y = 245;
-                        break;
-                    case 9:
-                        X = 831;
-                        Y = 245;
-                        break;
-                    case 10:
-                        X = 259;
-                        Y = 330;
-                        break;
-                    case 11:
-                        X = 322;
-                        Y = 330;
-                        break;
-                    case 12:
-                        X = 387;
-                        Y = 330;
-                        break;
-                    case 13:
-                        X = 249;
-                        Y = 330;
-                        break;
-                    case 14:
-                        X = 450;
-                        Y = 330;
-                        break;
-                    case 15:
-                        X = 578;
-                        Y = 330;
-                        break;
-                    case 16:
-                        X = 641;
-                        Y = 330;
-                        break;
-                    case 17:
-                        X = 705;
-                        Y = 330;
-                        break;
-                    case 18:
-                        X = 768;
-                        Y = 330;
-                        break;
-                    case 19:
-                        X = 831;
-                        Y = 330;
-                        break;
-                    case 20:
-                        X = 259;
-                        Y = 410;
-                        break;
-                    case 21:
-                        X = 322;
-                        Y = 410;
-                        break;
-                    case 22:
-                        X = 387;
-                        Y = 410;
-                        break;
-                    case 23:
-                        X = 249;
-                        Y = 410;
-                        break;
-                    case 24:
-                        X = 450;
-                        Y = 410;
-                        break;
-                    case 25:
-                        X = 578;
-                        Y = 410;
-                        break;
-                    case 26:
-                        X = 641;
-                        Y = 410;
-                        break;
-                    case 27:
-                        X = 705;
-                        Y = 410;
-                        break;
-                    case 28:
-                        X = 768;
-                        Y = 410;
-                        break;
-                    case 29:
-                        X = 831;
-                        Y = 410;
-                        break;
+                case 0:
+                    X = 259;
+                    Y = 245;
+                    break;
+                case 1:
+                    X = 322;
+                    Y = 245;
+                    break;
+                case 2:
+                    X = 387;
+                    Y = 245;
+                    break;
+                case 3:
+                    X = 450;
+                    Y = 245;
+                    break;
+                case 4:
+                    X = 513;
+                    Y = 245;
+                    break;
+                case 5:
+                    X = 578;
+                    Y = 245;
+                    break;
+                case 6:
+                    X = 641;
+                    Y = 245;
+                    break;
+                case 7:
+                    X = 705;
+                    Y = 245;
+                    break;
+                case 8:
+                    X = 768;
+                    Y = 245;
+                    break;
+                case 9:
+                    X = 831;
+                    Y = 245;
+                    break;
+                case 10:
+                    X = 259;
+                    Y = 330;
+                    break;
+                case 11:
+                    X = 322;
+                    Y = 330;
+                    break;
+                case 12:
+                    X = 387;
+                    Y = 330;
+                    break;
+                case 13:
+                    X = 249;
+                    Y = 330;
+                    break;
+                case 14:
+                    X = 450;
+                    Y = 330;
+                    break;
+                case 15:
+                    X = 578;
+                    Y = 330;
+                    break;
+                case 16:
+                    X = 641;
+                    Y = 330;
+                    break;
+                case 17:
+                    X = 705;
+                    Y = 330;
+                    break;
+                case 18:
+                    X = 768;
+                    Y = 330;
+                    break;
+                case 19:
+                    X = 831;
+                    Y = 330;
+                    break;
+                case 20:
+                    X = 259;
+                    Y = 410;
+                    break;
+                case 21:
+                    X = 322;
+                    Y = 410;
+                    break;
+                case 22:
+                    X = 387;
+                    Y = 410;
+                    break;
+                case 23:
+                    X = 249;
+                    Y = 410;
+                    break;
+                case 24:
+                    X = 450;
+                    Y = 410;
+                    break;
+                case 25:
+                    X = 578;
+                    Y = 410;
+                    break;
+                case 26:
+                    X = 641;
+                    Y = 410;
+                    break;
+                case 27:
+                    X = 705;
+                    Y = 410;
+                    break;
+                case 28:
+                    X = 768;
+                    Y = 410;
+                    break;
+                case 29:
+                    X = 831;
+                    Y = 410;
+                    break;
                 }
             }
-            if(itemName.Name == "Null"){
+            if (itemName.Name == "Null") {
                 reDrawBar = false;
             }
             if (itemName.Name != "Null" && itemName.Amount > 0 && (inventoryBarText[e] == "Null" || inventoryBarText[e] == undefined) || reDrawBar == true) {
@@ -2109,6 +2676,10 @@ function openFurnace() {
         game.world.bringToTop(inventoryBarText);
     }
     reDrawBar = false;
+
+    if (blocksA[blockClickedNum].fuel != undefined) {
+        game.add.sprite(0, 0, blocksA[blockClickedNum].fuel);
+    }
 }
 
 /**
@@ -2117,15 +2688,24 @@ function openFurnace() {
  */
 function ePressed() {
 
-    if(furnace.alpha == 100){
+    if (furnace.alpha == 100) {
         furnace.alpha = 0;
         save.kill();
         trash.kill();
         inventory.visible = true;
+        if (blocksA[blockClickedNum].fuelSprite != undefined) {
+            blocksA[blockClickedNum].fuelSprite.alpha = 0;
+            blocksA[blockClickedNum].fuelText.text = "";
+        }
+        if (blocksA[blockClickedNum].ingredientSprite != undefined) {
+            blocksA[blockClickedNum].ingredientSprite.alpha = 0;
+            blocksA[blockClickedNum].ingredientText.text = "";
+        }
+
     }
     var loopCount = 0;
     if (inventoryBar.visible == false && updateInventory == false) { //Inventory bar not visible
-        blockClicked="";
+        blockClicked = "";
         save.kill();
         trash.kill();
         for (var e = 0; e < inventory.items.length; e++) {
@@ -2160,15 +2740,18 @@ function ePressed() {
         }
         new HUD();
     } else { //Inventory bar visible
-        save = game.add.sprite(0, 0, 'save');
-        save.inputEnabled = true;
-        save.events.onInputDown.add(upload, this);
-        save.fixedToCamera = true;
+        if (save == undefined || save.alive == false) {
+            save = game.add.sprite(0, 0, 'save');
+            save.inputEnabled = true;
+            save.events.onInputDown.add(upload, this);
+            save.fixedToCamera = true;
 
-        trash = game.add.sprite(0 + save.width, 0, 'trash');
-        trash.inputEnabled = true;
-        trash.events.onInputDown.add(clearLevel, this);
-        trash.fixedToCamera = true;
+            trash = game.add.sprite(0 + save.width, 0, 'trash');
+            trash.inputEnabled = true;
+            trash.events.onInputDown.add(clearLevel, this);
+            trash.fixedToCamera = true;
+        }
+
         for (var e = 0; e < inventoryTabButton.length; e++) {
             inventoryTabButton[e].sprite.visible = true;
             inventoryTabButton[e].tabSprite.visible = true;
@@ -2193,10 +2776,9 @@ function ePressed() {
         inventoryControls[6].onDown.add(controlInventoryScreen, this);
         inventoryControls[7] = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
         inventoryControls[7].onDown.add(controlInventoryScreen, this);
-        if(blockClicked == "Crafting Table"){
+        if (blockClicked == "Crafting Table") {
             inventoryType = 3;
-        }
-        else {
+        } else {
             inventoryType = 2;
             inventory.currentTab = 0;
         }
@@ -2223,7 +2805,7 @@ function ePressed() {
  * This delete the current save of the player
  * @constructor
  */
-function clearLevel(){
+function clearLevel() {
     $.get("/delete?username=" + username + "&del=" + true);
     $.get("/playerDelete?username=" + username + "&del=" + true);
 }
@@ -2247,12 +2829,12 @@ function upload() {
             end = e;
         } else {
             uploadData = true;
+            e--;
         }
-        if(uploadData == true || e == blocksA.length - 1){
+        if (uploadData == true || e == blocksA.length - 1) {
             uploadData = false;
-            console.log("Pushing: " + start + " : " + end);
             start = e;
-            if(e + 10 < blocksA.length) {
+            if (e + 10 < blocksA.length) {
                 e -= 1;
             }
             if (del == true) {
@@ -2274,12 +2856,12 @@ function upload() {
             dataLength = dataLength + chunks[e].key.length + chunks[e].body.x.toString().length + chunks[e].body.y.toString().length;
             uploadData = false;
             end = e;
-        } else{
+        } else {
             uploadData = true;
+            e--;
         }
-        if(uploadData == true || e == chunks.length - 1){
+        if (uploadData == true || e == chunks.length - 1) {
             uploadData = false;
-            console.log("Pushing: " + start + " : " + end);
             start = e;
             $.get("/save?username=" + username + "&blocks=" + storeData);
             storeData = [];
@@ -2288,22 +2870,21 @@ function upload() {
     }
     storeData = [];
     dataLength = 0;
-    for(var e = 0; e < player.inventory.length; e++){
-        if(e == 0){
+    for (var e = 0; e < player.inventory.length; e++) {
+        if (e == 0) {
             $.get("/playerDelete?username=" + username + "&del=" + true);
-            $.get("/playerSave?username=" + username + "&X=" + player.body.x  + "&Y=" + player.body.y + "&SpawnX=" + player.spawnX + "&SpawnY=" + player.spawnY + "&Health=" + player.health);
+            $.get("/playerSave?username=" + username + "&X=" + player.body.x + "&Y=" + player.body.y + "&SpawnX=" + player.spawnX + "&SpawnY=" + player.spawnY + "&Health=" + player.health);
         }
-        if(player.inventory[e].Name != "Null"){
-            if(dataLength + player.inventory.toString().length < 500) {
-                storeData.push(player.inventory[e].Amount + "," +  player.inventory[e].Name + "," +  player.inventory[e].Placeable + "," +  player.inventory[e].Strength + "," +  player.inventory[e].Health);
-            }
-            else{
+        if (player.inventory[e].Name != "Null") {
+            if (dataLength + player.inventory.toString().length < 500) {
+                storeData.push(player.inventory[e].Amount + "," + player.inventory[e].Name + "," + player.inventory[e].Placeable + "," + player.inventory[e].Strength + "," + player.inventory[e].Health);
+            } else {
                 $.get("/playerInventorySave?username=" + username + "&data=" + storeData);
                 storeData = [];
                 dataLength = 0;
             }
         }
-        if(e == player.inventory.length - 1){
+        if (e == player.inventory.length - 1) {
             $.get("/playerInventorySave?username=" + username + "&data=" + storeData);
         }
     }
@@ -2323,7 +2904,6 @@ function retrieve() {
         dataType: 'jsonp',
         contentType: 'application/javascript',
         success: function (response) {
-            console.dir(response);
             var name;
             var x;
             var y;
@@ -2348,10 +2928,12 @@ function retrieve() {
                 }
             }
             blockKeyData.sort(function (a, b) {
-  if (a.X == b.X) return a.Y - b.Y;
-  return a.X - b.X;
+                if (a.X == b.X) {
+                    return a.Y - b.Y;
+                }
+                return a.X - b.X;
             });
-            if(game == undefined){
+            if (game == undefined) {
                 startGame();
             }
         }
